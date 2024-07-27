@@ -1,5 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from "next";
-import { MongoClient } from "mongodb";
+import { MongoClient, ObjectId } from "mongodb";
 
 const uri = process.env.MONGODB_URI || "";
 let client: MongoClient;
@@ -12,6 +12,9 @@ async function connectToDatabase() {
   return client.db("ChaiMine");
 }
 
+// Store the last sent ID for each location
+const lastSentIds: { [key: string]: string } = {};
+
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
@@ -21,6 +24,10 @@ export default async function handler(
   }
 
   const { location } = req.query;
+
+  if (typeof location !== "string") {
+    return res.status(400).json({ error: "Invalid location parameter" });
+  }
 
   try {
     const db = await connectToDatabase();
@@ -38,7 +45,17 @@ export default async function handler(
         .json({ error: "No data found for the specified location" });
     }
 
-    res.status(200).json(latestEntry[0]);
+    const latestId = latestEntry[0]._id.toString();
+
+    // Check if the latest ID is different from the last sent ID
+    if (latestId !== lastSentIds[location]) {
+      // Update the last sent ID for this location
+      lastSentIds[location] = latestId;
+      res.status(200).json(latestEntry[0]);
+    } else {
+      // If the ID is the same, send a 204 No Content status
+      res.status(204).end();
+    }
   } catch (error) {
     res.status(500).json({ error: "Unable to fetch data" });
   }
