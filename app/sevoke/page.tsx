@@ -83,19 +83,17 @@ const LatestSongSevoke: React.FC = () => {
        if (response.status === 200) {
          const data: Song = await response.json();
          if (data.location === "Sevoke") {
-           if (!currentSong) {
-             if (isInitialLoad) {
-               const randomSong = getRandomSong();
-               setCurrentSong({
-                 ...randomSong,
-                 location: "Sevoke",
-                 timestamp: new Date().toISOString(),
-               });
-               setLastPlayedLibrarySongId(randomSong._id);
-               setIsInitialLoad(false);
-             } else {
-               setCurrentSong(data);
-             }
+           if (isInitialLoad) {
+             const randomSong = getRandomSong();
+             setCurrentSong({
+               ...randomSong,
+               location: "Sevoke",
+               timestamp: new Date().toISOString(),
+             });
+             setLastPlayedLibrarySongId(randomSong._id);
+             setIsInitialLoad(false);
+           } else if (!currentSong) {
+             setCurrentSong(data);
            } else if (
              !queue.some((song) => song._id === data._id) &&
              data._id !== currentSong._id
@@ -119,6 +117,8 @@ const LatestSongSevoke: React.FC = () => {
      }
    };
 
+   fetchLatestSong(); // Run immediately
+
    const fetchInterval = setInterval(fetchLatestSong, 1000);
    const timerInterval = setInterval(() => {
      setTimeRemaining((prevTime) => {
@@ -134,7 +134,7 @@ const LatestSongSevoke: React.FC = () => {
      clearInterval(fetchInterval);
      clearInterval(timerInterval);
    };
- }, [currentSong, queue,isInitialLoad]);
+ }, [currentSong, queue, isInitialLoad]);
 
   const onPlayerStateChange = (event: YT.OnStateChangeEvent) => {
     if (event.data === YT.PlayerState.ENDED) {
