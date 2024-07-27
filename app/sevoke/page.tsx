@@ -76,65 +76,65 @@ const LatestSongSevoke: React.FC = () => {
     setTimeRemaining(300);
   };
 
- useEffect(() => {
-   const fetchLatestSong = async () => {
-     try {
-       const response = await fetch("/api/getLatest?location=Sevoke");
-       if (response.status === 200) {
-         const data: Song = await response.json();
-         if (data.location === "Sevoke") {
-           if (isInitialLoad) {
-             const randomSong = getRandomSong();
-             setCurrentSong({
-               ...randomSong,
-               location: "Sevoke",
-               timestamp: new Date().toISOString(),
-             });
-             setLastPlayedLibrarySongId(randomSong._id);
-             setIsInitialLoad(false);
-           } else if (!currentSong) {
-             setCurrentSong(data);
-           } else if (
-             !queue.some((song) => song._id === data._id) &&
-             data._id !== currentSong._id
-           ) {
-             setQueue((prevQueue) =>
-               [...prevQueue, data].sort(
-                 (a, b) =>
-                   new Date(a.timestamp).getTime() -
-                   new Date(b.timestamp).getTime()
-               )
-             );
-           }
-         }
-       } else if (response.status === 204) {
-         // No new data, do nothing
-       } else {
-         console.error("Error fetching latest song:", response.statusText);
-       }
-     } catch (error) {
-       console.error("Error fetching latest song:", error);
-     }
-   };
+  useEffect(() => {
+    const fetchLatestSong = async () => {
+      try {
+        const response = await fetch("/api/getLatest?location=Sevoke");
+        if (response.status === 200) {
+          const data: Song = await response.json();
+          if (data.location === "Sevoke") {
+            if (isInitialLoad) {
+              const randomSong = getRandomSong();
+              setCurrentSong({
+                ...randomSong,
+                location: "Sevoke",
+                timestamp: new Date().toISOString(),
+              });
+              setLastPlayedLibrarySongId(randomSong._id);
+              setIsInitialLoad(false);
+            } else if (!currentSong) {
+              setCurrentSong(data);
+            } else if (
+              !queue.some((song) => song._id === data._id) &&
+              data._id !== currentSong._id
+            ) {
+              setQueue((prevQueue) =>
+                [...prevQueue, data].sort(
+                  (a, b) =>
+                    new Date(a.timestamp).getTime() -
+                    new Date(b.timestamp).getTime()
+                )
+              );
+            }
+          }
+        } else if (response.status === 204) {
+          // No new data, do nothing
+        } else {
+          console.error("Error fetching latest song:", response.statusText);
+        }
+      } catch (error) {
+        console.error("Error fetching latest song:", error);
+      }
+    };
 
-   fetchLatestSong(); // Run immediately
+    fetchLatestSong(); // Run immediately
 
-   const fetchInterval = setInterval(fetchLatestSong, 1000);
-   const timerInterval = setInterval(() => {
-     setTimeRemaining((prevTime) => {
-       if (prevTime <= 1) {
-         playNextSong();
-         return 300;
-       }
-       return prevTime - 1;
-     });
-   }, 1000);
+    const fetchInterval = setInterval(fetchLatestSong, 1000);
+    const timerInterval = setInterval(() => {
+      setTimeRemaining((prevTime) => {
+        if (prevTime <= 1) {
+          playNextSong();
+          return 300;
+        }
+        return prevTime - 1;
+      });
+    }, 1000);
 
-   return () => {
-     clearInterval(fetchInterval);
-     clearInterval(timerInterval);
-   };
- }, [currentSong, queue, isInitialLoad]);
+    return () => {
+      clearInterval(fetchInterval);
+      clearInterval(timerInterval);
+    };
+  }, [currentSong, queue, isInitialLoad]);
 
   const onPlayerStateChange = (event: YT.OnStateChangeEvent) => {
     if (event.data === YT.PlayerState.ENDED) {

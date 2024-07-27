@@ -12,9 +12,7 @@ async function connectToDatabase() {
   return client.db("ChaiMine");
 }
 
-// Helper function to format the date to "11 July 2021 12:23 pm"
 function formatDateToIST(date: Date): string {
-  // Convert to IST by adding 5 hours and 30 minutes
   const istOffset = 0;
   const istDate = new Date(date.getTime() + istOffset);
 
@@ -45,6 +43,16 @@ export default async function handler(
     const { location, youtubeLink, name } = req.body;
     const db = await connectToDatabase();
     const collection = db.collection("Song");
+
+    // Check if this song is already the most recent one for this location
+    const mostRecentSong = await collection.findOne(
+      { location },
+      { sort: { timestamp: -1 } }
+    );
+
+    if (mostRecentSong && mostRecentSong.youtubeLink === youtubeLink) {
+      return res.status(400).json({ error: "duplicate_song" });
+    }
 
     // Get current date and time
     const now = new Date();

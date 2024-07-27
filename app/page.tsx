@@ -14,6 +14,7 @@ const Home: React.FC = () => {
   const [youtubeLink, setYoutubeLink] = useState<string>("");
   const [name, setName] = useState<string>("");
   const [showValidation, setShowValidation] = useState<boolean>(false);
+  const [duplicateError, setDuplicateError] = useState<string>("");
   const detailsRef = useRef<HTMLDetailsElement>(null);
   const router = useRouter();
 
@@ -24,8 +25,22 @@ const Home: React.FC = () => {
     }
   };
 
+  const isValidYoutubeLink = (url: string): boolean => {
+    const youtubeRegex =
+      /^(https?:\/\/)?(www\.)?(youtube\.com|youtu\.?be)\/.+$/;
+    return youtubeRegex.test(url);
+  };
+
   const handleSubmit = async () => {
-    if (selectedLocation && youtubeLink.trim() && name) {
+    setShowValidation(true);
+    setDuplicateError("");
+
+    if (
+      selectedLocation &&
+      youtubeLink.trim() &&
+      name &&
+      isValidYoutubeLink(youtubeLink)
+    ) {
       const formData: FormData = {
         location: selectedLocation,
         youtubeLink,
@@ -42,23 +57,29 @@ const Home: React.FC = () => {
         });
 
         if (!response.ok) {
-          throw new Error("Failed to submit data");
+          const errorData = await response.json();
+          if (errorData.error === "duplicate_song") {
+            setDuplicateError(
+              "This song is already in the queue for the selected location. Please choose a different song."
+            );
+          } else {
+            throw new Error("Failed to submit data");
+          }
+        } else {
+          console.log(await response.json());
+          setSelectedLocation("");
+          setYoutubeLink("");
+          setName("");
+          setShowValidation(false);
         }
-
-        console.log(await response.json());
-        setSelectedLocation("");
-        setYoutubeLink("");
-        setName("");
-        setShowValidation(false);
       } catch (error) {
         console.error("Error:", error);
       }
-    } else {
-      setShowValidation(true);
     }
   };
 
   const allFieldsFilled = selectedLocation && youtubeLink.trim() && name;
+  const isYoutubeLinkValid = isValidYoutubeLink(youtubeLink);
 
   return (
     <main className="p-4 space-y-4">
@@ -98,6 +119,11 @@ const Home: React.FC = () => {
         value={youtubeLink}
         onChange={(e) => setYoutubeLink(e.target.value)}
       />
+      {showValidation && youtubeLink && !isYoutubeLinkValid && (
+        <p className="text-red-500 text-sm">
+          Please enter a valid YouTube link.
+        </p>
+      )}
 
       <p className="text-lg font-semibold">Your Name</p>
       <input
@@ -112,6 +138,10 @@ const Home: React.FC = () => {
         <p className="text-red-500 text-sm">
           Please fill in all fields before submitting.
         </p>
+      )}
+
+      {duplicateError && (
+        <p className="text-red-500 text-sm">{duplicateError}</p>
       )}
 
       <button className="btn block" onClick={handleSubmit}>
