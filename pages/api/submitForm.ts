@@ -13,7 +13,7 @@ async function connectToDatabase() {
 }
 
 function formatDateToIST(date: Date): string {
-  const istOffset = 0;
+  const istOffset = 5.5 * 60 * 60 * 1000; // IST offset in milliseconds
   const istDate = new Date(date.getTime() + istOffset);
 
   const day = istDate.getDate();
@@ -41,7 +41,6 @@ function getCollectionName(location: string): string {
       throw new Error("Invalid location");
   }
 }
-
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
@@ -63,13 +62,17 @@ export default async function handler(
     const db = await connectToDatabase();
     const collection = db.collection(collectionName);
 
-    // Check if this song is already the most recent one for this location
-    const mostRecentSong = await collection.findOne(
-      { location },
-      { sort: { timestamp: -1 } }
-    );
+    // Get the last 3 entries
+    const lastThreeEntries = await collection
+      .find({}, { sort: { _id: -1 }, limit: 3 })
+      .toArray();
 
-    if (mostRecentSong && mostRecentSong.youtubeLink === youtubeLink) {
+    // Check if the youtubeLink exists in the last 2 entries
+    const isDuplicate = lastThreeEntries
+      .slice(0, 2)
+      .some((entry) => entry.youtubeLink === youtubeLink);
+
+    if (isDuplicate) {
       return res.status(400).json({ error: "duplicate_song" });
     }
 

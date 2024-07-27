@@ -58,10 +58,16 @@ const Home: React.FC = () => {
 
         if (!response.ok) {
           const errorData = await response.json();
-          if (errorData.error === "duplicate_song") {
-            setDuplicateError(
-              "This song is already in the queue for the selected location. Please choose a different song."
-            );
+          if (response.status === 400) {
+            if (errorData.error === "duplicate_song") {
+              setDuplicateError(
+                "This song is already in the queue for the selected location. Please choose a different song."
+              );
+            } else {
+              setDuplicateError(
+                "An error occurred while submitting the form. Please try again."
+              );
+            }
           } else {
             throw new Error("Failed to submit data");
           }
@@ -71,9 +77,13 @@ const Home: React.FC = () => {
           setYoutubeLink("");
           setName("");
           setShowValidation(false);
+          setDuplicateError(""); // Clear any previous error messages
         }
       } catch (error) {
         console.error("Error:", error);
+        setDuplicateError(
+          "An unexpected error occurred. Please try again later."
+        );
       }
     }
   };
