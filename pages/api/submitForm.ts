@@ -31,6 +31,17 @@ function formatDateToIST(date: Date): string {
   return `${day} ${month} ${year} ${hours}:${strMinutes} ${ampm}`;
 }
 
+function getCollectionName(location: string): string {
+  switch (location.toLowerCase()) {
+    case "dagapur":
+      return "SongDagapur";
+    case "sevoke":
+      return "SongSevoke";
+    default:
+      throw new Error("Invalid location");
+  }
+}
+
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
@@ -41,8 +52,16 @@ export default async function handler(
 
   try {
     const { location, youtubeLink, name } = req.body;
+
+    let collectionName: string;
+    try {
+      collectionName = getCollectionName(location);
+    } catch (error) {
+      return res.status(400).json({ error: "Invalid location" });
+    }
+
     const db = await connectToDatabase();
-    const collection = db.collection("Song");
+    const collection = db.collection(collectionName);
 
     // Check if this song is already the most recent one for this location
     const mostRecentSong = await collection.findOne(

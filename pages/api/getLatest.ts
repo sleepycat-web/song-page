@@ -1,7 +1,7 @@
-import type { NextApiRequest, NextApiResponse } from "next";
-import { MongoClient, ObjectId } from "mongodb";
+import type { NextApiRequest, NextApiResponse } from 'next';
+import { MongoClient, ObjectId } from 'mongodb';
 
-const uri = process.env.MONGODB_URI || "";
+const uri = process.env.MONGODB_URI || '';
 let client: MongoClient;
 
 async function connectToDatabase() {
@@ -9,32 +9,51 @@ async function connectToDatabase() {
     client = new MongoClient(uri);
     await client.connect();
   }
-  return client.db("ChaiMine");
+  return client.db('ChaiMine');
 }
 
 // Store the last sent ID for each location
 const lastSentIds: { [key: string]: string } = {};
 
+function getCollectionName(location: string): string {
+  switch (location) {
+    case 'Sevoke':
+      return 'SongSevoke';
+    case 'Dagapur':
+      return 'SongDagapur';
+    default:
+      throw new Error('Invalid location');
+  }
+}
+
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
-  if (req.method !== "GET") {
+  if (req.method !== 'GET') {
     return res.status(405).end();
   }
 
   const { location } = req.query;
 
-  if (typeof location !== "string") {
-    return res.status(400).json({ error: "Invalid location parameter" });
+  if (typeof location !== 'string') {
+    return res.status(400).json({ error: 'Invalid location parameter' });
   }
 
   try {
     const db = await connectToDatabase();
-    const collection = db.collection("Song");
+    let collectionName: string;
+
+    try {
+      collectionName = getCollectionName(location);
+    } catch (error) {
+      return res.status(400).json({ error: 'Invalid location' });
+    }
+
+    const collection = db.collection(collectionName);
 
     const latestEntry = await collection
-      .find({ location })
+      .find()
       .sort({ _id: -1 })
       .limit(1)
       .toArray();
@@ -42,7 +61,7 @@ export default async function handler(
     if (latestEntry.length === 0) {
       return res
         .status(404)
-        .json({ error: "No data found for the specified location" });
+        .json({ error: 'No data found for the specified location' });
     }
 
     const latestId = latestEntry[0]._id.toString();
@@ -57,6 +76,6 @@ export default async function handler(
       res.status(204).end();
     }
   } catch (error) {
-    res.status(500).json({ error: "Unable to fetch data" });
+    res.status(500).json({ error: 'Unable to fetch data' });
   }
 }
