@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 
-const ProfileTimer: React.FC = () => {
+const Profile: React.FC = () => {
   const [timeLeft, setTimeLeft] = useState<string>("");
 
   useEffect(() => {
@@ -38,10 +38,10 @@ const ProfileTimer: React.FC = () => {
   return (
     <div className="p-6 rounded-lg shadow-md text-center">
       <p className="text-lg font-bold mb-4">
-        This profile is valid for {timeLeft}
+        This profile is valid till {timeLeft}{" "}
       </p>
     </div>
   );
 };
 
-export default ProfileTimer;
+export default Profile;
