@@ -1,5 +1,5 @@
 import { NextApiRequest, NextApiResponse } from "next";
-
+//random comm
 export default function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === "POST") {
     const { username, password, location } = req.body;
