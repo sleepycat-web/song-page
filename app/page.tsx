@@ -92,10 +92,18 @@ const Home: React.FC = () => {
   const isYoutubeLinkValid = isValidYoutubeLink(youtubeLink);
 
   return (
-    <main className="p-4 space-y-4">
-      <p className="text-lg font-semibold">Select a location</p>
-
-      <details className="dropdown" ref={detailsRef}>
+    <main className=" p-4 space-y-4">
+      <p>
+        Go To YouTube
+        <br />
+        Play Your Music
+        <br />
+        Press Share Button & Copy Link
+        <br />
+        Paste The Link Below👇
+      </p>
+      <p className="text-lg  font-semibold">Select a location</p>
+      <details className=" dropdown" ref={detailsRef}>
         <summary className="btn m-1 flex items-center">
           {selectedLocation || "Select Location"}
           <svg
@@ -107,7 +115,7 @@ const Home: React.FC = () => {
             <path d="M201.4 374.6c12.5 12.5 32.8 12.5 45.3 0l160-160c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L224 306.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l160 160z" />
           </svg>
         </summary>
-        <ul className="menu dropdown-content bg-base-100 rounded-box z-[1] w-52 p-2 shadow">
+        <ul className="menu dropdown-content  bg-base-100 rounded-box z-[1] w-52 p-2 shadow">
           <li>
             <button onClick={() => handleLocationSelect("Dagapur")}>
               Dagapur
@@ -120,7 +128,6 @@ const Home: React.FC = () => {
           </li>
         </ul>
       </details>
-
       <p className="text-lg font-semibold">Paste your Youtube link</p>
       <input
         type="text"
@@ -134,7 +141,6 @@ const Home: React.FC = () => {
           Please enter a valid YouTube link.
         </p>
       )}
-
       <p className="text-lg font-semibold">Your Name</p>
       <input
         type="text"
@@ -143,17 +149,14 @@ const Home: React.FC = () => {
         value={name}
         onChange={(e) => setName(e.target.value)}
       />
-
       {showValidation && !allFieldsFilled && (
         <p className="text-red-500 text-sm">
           Please fill in all fields before submitting.
         </p>
       )}
-
       {duplicateError && (
         <p className="text-red-500 text-sm">{duplicateError}</p>
       )}
-
       <button className="btn block" onClick={handleSubmit}>
         Submit
       </button>

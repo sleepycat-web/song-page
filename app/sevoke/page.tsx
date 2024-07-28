@@ -1,7 +1,9 @@
 "use client";
 
+import songLibrary from "../../scripts/song/library";
 import React, { useEffect, useState, useRef } from "react";
 import YouTube from "react-youtube";
+import Profile from "./profile";
 
 interface Song {
   _id: string;
@@ -11,40 +13,25 @@ interface Song {
   timestamp: string;
 }
 
-const songLibrary = [
-  {
-    _id: "lib_1",
-    youtubeLink: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
-    name: "Song 1",
-  },
-  {
-    _id: "lib_2",
-    youtubeLink: "https://www.youtube.com/watch?v=L_jWHffIx5E",
-    name: "Song 2",
-  },
-  {
-    _id: "lib_3",
-    youtubeLink: "https://youtu.be/izGwDsrQ1eQ?si=3vGO28sU66GynBZt",
-    name: "Song 3",
-  },
-  {
-    _id: "lib_5",
-    youtubeLink:
-      "https://www.youtube.com/watch?v=kJQP7kiw5Fk&list=PL15B1E77BB5708555",
-    name: "Song 5",
-  },
-  {
-    _id: "lib_6",
-    youtubeLink: "https://youtu.be/60ItHLz5WEA?si=a4Yi7N_THx0dvh9m",
-    name: "Song 6",
-  },
-];
+const formatTimestamp = (timestamp: string): string => {
+  const date = new Date(timestamp);
+  return date.toLocaleString("en-US", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: true,
+  });
+};
 
 const LatestSongSevoke: React.FC = () => {
   const [currentSong, setCurrentSong] = useState<Song | null>(null);
   const [queue, setQueue] = useState<Song[]>([]);
   const [timeRemaining, setTimeRemaining] = useState<number>(300);
   const youtubePlayerRef = useRef<YT.Player | null>(null);
+  const [playerKey, setPlayerKey] = useState(0);
+  const [isValidYouTubeLink, setIsValidYouTubeLink] = useState(true);
   const [lastPlayedLibrarySongId, setLastPlayedLibrarySongId] = useState<
     string | null
   >(null);
@@ -61,6 +48,9 @@ const LatestSongSevoke: React.FC = () => {
   const playNextSong = () => {
     if (queue.length > 0) {
       const nextSong = queue[0];
+      if (currentSong && nextSong.youtubeLink === currentSong.youtubeLink) {
+        setPlayerKey((prevKey) => prevKey + 1);
+      }
       setCurrentSong(nextSong);
       setQueue((prevQueue) => prevQueue.slice(1));
       setLastPlayedLibrarySongId(null);
@@ -69,12 +59,20 @@ const LatestSongSevoke: React.FC = () => {
       setCurrentSong({
         ...newSong,
         location: "Sevoke",
-        timestamp: new Date().toISOString(),
+        timestamp: new Date().toISOString(), // Ensure ISO string format
       });
       setLastPlayedLibrarySongId(newSong._id);
     }
     setTimeRemaining(300);
   };
+
+  useEffect(() => {
+    if (currentSong && !getYouTubeVideoId(currentSong.youtubeLink)) {
+      handleError();
+    } else {
+      setIsValidYouTubeLink(true);
+    }
+  }, [currentSong]);
 
   useEffect(() => {
     const fetchLatestSong = async () => {
@@ -142,7 +140,13 @@ const LatestSongSevoke: React.FC = () => {
     }
   };
 
+  const onPlayerError = (event: YT.OnErrorEvent) => {
+    console.error("YouTube player error:", event.data);
+    handleError();
+  };
+
   const getYouTubeVideoId = (url: string): string | null => {
+    if (!url) return null;
     const regExp =
       /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
     const match = url.match(regExp);
@@ -159,11 +163,41 @@ const LatestSongSevoke: React.FC = () => {
     youtubePlayerRef.current = event.target;
   };
 
+  const handleError = () => {
+    setIsValidYouTubeLink(false);
+    const randomSong = getRandomSong();
+    setCurrentSong({
+      ...randomSong,
+      location: "Sevoke",
+      timestamp: new Date().toISOString(), // Ensure ISO string format
+    });
+    setLastPlayedLibrarySongId(randomSong._id);
+    setIsValidYouTubeLink(true);
+  };
+
+  const handleNextClick = () => {
+    playNextSong();
+  };
+
+  const handleResetClick = () => {
+    setQueue([]);
+    setIsInitialLoad(true);
+    localStorage.removeItem("songQueue");
+    localStorage.removeItem("currentSong");
+  };
+
   return (
+     <div className="relative">
+    {/* Profile component in the top right corner */}
+    <div className="hidden lg:block absolute top-0 right-0 m-4">
+      <Profile />
+    </div>
+
+    {/* Existing content */}
     <div>
       {currentSong ? (
-        <div>
-          <h2>Current Song in Sevoke</h2>
+        <div className="ml-4">
+          <h2 className="py-2 text-2xl font-bold">Current Song in Sevoke</h2>
           <p>
             <strong>Location:</strong> {currentSong.location}
           </p>
@@ -174,13 +208,16 @@ const LatestSongSevoke: React.FC = () => {
             <strong>Name:</strong> {currentSong.name}
           </p>
           <p>
-            <strong>Last Updated:</strong> {currentSong.timestamp}
+            <strong>Last Updated:</strong>{" "}
+            {formatTimestamp(currentSong.timestamp)}
           </p>
           <p>
             <strong>Time until next song:</strong> {formatTime(timeRemaining)}
           </p>
-          {getYouTubeVideoId(currentSong.youtubeLink) && (
+
+          {isValidYouTubeLink && getYouTubeVideoId(currentSong?.youtubeLink) ? (
             <YouTube
+              key={`${currentSong._id}-${playerKey}`}
               videoId={getYouTubeVideoId(currentSong.youtubeLink)!}
               opts={{
                 height: "390",
@@ -191,14 +228,33 @@ const LatestSongSevoke: React.FC = () => {
               }}
               onReady={onPlayerReady}
               onStateChange={onPlayerStateChange}
+              onError={onPlayerError}
+              className="my-4"
             />
+          ) : (
+            <p>Loading new video...</p>
           )}
+
+          <div className="flex space-x-4 mt-4">
+            <button
+              className="btn m-4 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+              onClick={handleNextClick}
+            >
+              Next
+            </button>
+            <button
+              className="btn m-4 bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
+              onClick={handleResetClick}
+            >
+              Reset
+            </button>
+          </div>
         </div>
       ) : (
         <p>Loading...</p>
       )}
       {queue.length > 0 && (
-        <div>
+        <div className="ml-4">
           <h3>Next in Queue:</h3>
           {queue.map((song, index) => (
             <div key={song._id}>
@@ -213,6 +269,7 @@ const LatestSongSevoke: React.FC = () => {
         </div>
       )}
     </div>
+  </div>
   );
 };
 

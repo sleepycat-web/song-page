@@ -13,7 +13,7 @@ async function connectToDatabase() {
 }
 
 function formatDateToIST(date: Date): string {
-  const istOffset = 5.5 * 60 * 60 * 1000; // IST offset in milliseconds
+  const istOffset = 0; // IST offset in milliseconds
   const istDate = new Date(date.getTime() + istOffset);
 
   const day = istDate.getDate();
@@ -62,19 +62,18 @@ export default async function handler(
     const db = await connectToDatabase();
     const collection = db.collection(collectionName);
 
-    // Get the last 3 entries
-    const lastThreeEntries = await collection
-      .find({}, { sort: { _id: -1 }, limit: 3 })
-      .toArray();
+    // // Get the last entry
+    // const lastEntry = await collection
+    //   .find({}, { sort: { _id: -1 }, limit: 1 })
+    //   .toArray();
 
-    // Check if the youtubeLink exists in the last 2 entries
-    const isDuplicate = lastThreeEntries
-      .slice(0, 2)
-      .some((entry) => entry.youtubeLink === youtubeLink);
+    // // Check if the youtubeLink exists in the last entry
+    // const isDuplicate =
+    //   lastEntry.length > 0 && lastEntry[0].youtubeLink === youtubeLink;
 
-    if (isDuplicate) {
-      return res.status(400).json({ error: "duplicate_song" });
-    }
+    // if (isDuplicate) {
+    //   return res.status(400).json({ error: "duplicate_song" });
+    // }
 
     // Get current date and time
     const now = new Date();
