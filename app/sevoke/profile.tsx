@@ -38,7 +38,7 @@ const Profile: React.FC = () => {
   return (
     <div className="p-6 rounded-lg shadow-md text-center">
       <p className="text-lg font-bold mb-4">
-        This profile is valid till {timeLeft}{" "}
+        This profile is valid till 31 July 2024
       </p>
     </div>
   );
