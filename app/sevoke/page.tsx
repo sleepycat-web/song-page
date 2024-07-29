@@ -187,89 +187,90 @@ const LatestSongSevoke: React.FC = () => {
   };
 
   return (
-     <div className="relative">
-    {/* Profile component in the top right corner */}
-    <div className="hidden lg:block absolute top-0 right-0 m-4">
-      <Profile />
-    </div>
+    <div className="relative">
+      {/* Profile component in the top right corner */}
+      <div className="hidden lg:block absolute top-0 right-0 m-4">
+        <Profile />
+      </div>
 
-    {/* Existing content */}
-    <div>
-      {currentSong ? (
-        <div className="ml-4">
-          <h2 className="py-2 text-2xl font-bold">Current Song in Sevoke</h2>
-          <p>
-            <strong>Location:</strong> {currentSong.location}
-          </p>
-          <p>
-            <strong>YouTube Link:</strong> {currentSong.youtubeLink}
-          </p>
-          <p>
-            <strong>Name:</strong> {currentSong.name}
-          </p>
-          <p>
-            <strong>Last Updated:</strong>{" "}
-            {formatTimestamp(currentSong.timestamp)}
-          </p>
-          <p>
-            <strong>Time until next song:</strong> {formatTime(timeRemaining)}
-          </p>
+      {/* Existing content */}
+      <div>
+        {currentSong ? (
+          <div className="ml-4">
+            <h2 className="py-2 text-2xl font-bold">Current Song in Sevoke</h2>
+            <p>
+              <strong>Location:</strong> {currentSong.location}
+            </p>
+            <p>
+              <strong>YouTube Link:</strong> {currentSong.youtubeLink}
+            </p>
+            <p>
+              <strong>Name:</strong> {currentSong.name}
+            </p>
+            <p>
+              <strong>Last Updated:</strong>{" "}
+              {formatTimestamp(currentSong.timestamp)}
+            </p>
+            <p>
+              <strong>Time until next song:</strong> {formatTime(timeRemaining)}
+            </p>
 
-          {isValidYouTubeLink && getYouTubeVideoId(currentSong?.youtubeLink) ? (
-            <YouTube
-              key={`${currentSong._id}-${playerKey}`}
-              videoId={getYouTubeVideoId(currentSong.youtubeLink)!}
-              opts={{
-                height: "390",
-                width: "640",
-                playerVars: {
-                  autoplay: 1,
-                },
-              }}
-              onReady={onPlayerReady}
-              onStateChange={onPlayerStateChange}
-              onError={onPlayerError}
-              className="my-4"
-            />
-          ) : (
-            <p>Loading new video...</p>
-          )}
+            {isValidYouTubeLink &&
+            getYouTubeVideoId(currentSong?.youtubeLink) ? (
+              <YouTube
+                key={`${currentSong._id}-${playerKey}`}
+                videoId={getYouTubeVideoId(currentSong.youtubeLink)!}
+                opts={{
+                  height: "390",
+                  width: "640",
+                  playerVars: {
+                    autoplay: 1,
+                  },
+                }}
+                onReady={onPlayerReady}
+                onStateChange={onPlayerStateChange}
+                onError={onPlayerError}
+                className="my-4"
+              />
+            ) : (
+              <p>Loading new video...</p>
+            )}
 
-          <div className="flex space-x-4 mt-4">
-            <button
-              className="btn m-4 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
-              onClick={handleNextClick}
-            >
-              Next
-            </button>
-            <button
-              className="btn m-4 bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
-              onClick={handleResetClick}
-            >
-              Reset
-            </button>
-          </div>
-        </div>
-      ) : (
-        <p>Loading...</p>
-      )}
-      {queue.length > 0 && (
-        <div className="ml-4">
-          <h3>Next in Queue:</h3>
-          {queue.map((song, index) => (
-            <div key={song._id}>
-              <p>
-                <strong>
-                  {index + 1}. {song.name}
-                </strong>{" "}
-                - {song.youtubeLink}
-              </p>
+            <div className="flex space-x-4 mt-4">
+              <button
+                className="btn m-4 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+                onClick={handleNextClick}
+              >
+                Next
+              </button>
+              <button
+                className="btn m-4 bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
+                onClick={handleResetClick}
+              >
+                Reset
+              </button>
             </div>
-          ))}
-        </div>
-      )}
+          </div>
+        ) : (
+          <p>Loading...</p>
+        )}
+        {queue.length > 0 && (
+          <div className="ml-4">
+            <h3>Next in Queue:</h3>
+            {queue.map((song, index) => (
+              <div key={song._id}>
+                <p>
+                  <strong>
+                    {index + 1}. {song.name}
+                  </strong>{" "}
+                  - {song.youtubeLink}
+                </p>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
     </div>
-  </div>
   );
 };
 
