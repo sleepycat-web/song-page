@@ -11,6 +11,8 @@ interface FormData {
 
 const Home: React.FC = () => {
   const [selectedLocation, setSelectedLocation] = useState<string>("");
+  const [displayLocation, setDisplayLocation] = useState<string>("");
+  const [successMessage, setSuccessMessage] = useState<string>("");
   const [youtubeLink, setYoutubeLink] = useState<string>("");
   const [name, setName] = useState<string>("");
   const [showValidation, setShowValidation] = useState<boolean>(false);
@@ -20,6 +22,7 @@ const Home: React.FC = () => {
 
   const handleLocationSelect = (location: string) => {
     setSelectedLocation(location);
+    setDisplayLocation(location === "Sevoke" ? "Sevoke Road" : location);
     if (detailsRef.current) {
       detailsRef.current.open = false;
     }
@@ -73,7 +76,11 @@ const Home: React.FC = () => {
           }
         } else {
           console.log(await response.json());
+           setSuccessMessage(
+             `Your song has been added to the queue at Chai Mine ${displayLocation}`
+           );
           setSelectedLocation("");
+          setDisplayLocation("");
           setYoutubeLink("");
           setName("");
           setShowValidation(false);
@@ -105,7 +112,7 @@ const Home: React.FC = () => {
       <p className="text-lg  font-semibold">Select a location</p>
       <details className=" dropdown" ref={detailsRef}>
         <summary className="btn m-1 flex items-center">
-          {selectedLocation || "Select Location"}
+          {displayLocation || "Select Location"}
           <svg
             xmlns="http://www.w3.org/2000/svg"
             viewBox="0 0 448 512"
@@ -123,7 +130,7 @@ const Home: React.FC = () => {
           </li>
           <li>
             <button onClick={() => handleLocationSelect("Sevoke")}>
-              Sevoke
+              Sevoke Road
             </button>
           </li>
         </ul>
@@ -160,6 +167,9 @@ const Home: React.FC = () => {
       <button className="btn block" onClick={handleSubmit}>
         Submit
       </button>
+      {successMessage && (
+        <p className="text-green-500 mt-2">{successMessage}</p>
+      )}
     </main>
   );
 };
