@@ -32,7 +32,6 @@ const LatestSongSevoke: React.FC = () => {
   const youtubePlayerRef = useRef<YT.Player | null>(null);
   const [playerKey, setPlayerKey] = useState(0);
   const [isValidYouTubeLink, setIsValidYouTubeLink] = useState(true);
-  const [isLibrarySong, setIsLibrarySong] = useState(false);
   const [lastPlayedLibrarySongId, setLastPlayedLibrarySongId] = useState<
     string | null
   >(null);
@@ -43,11 +42,9 @@ const LatestSongSevoke: React.FC = () => {
       (song) => song._id !== lastPlayedLibrarySongId
     );
     const randomIndex = Math.floor(Math.random() * availableSongs.length);
-    setIsLibrarySong(true);
     return availableSongs[randomIndex];
   };
 
-  // Modify the playNextSong function
   const playNextSong = () => {
     if (queue.length > 0) {
       const nextSong = queue[0];
@@ -57,16 +54,14 @@ const LatestSongSevoke: React.FC = () => {
       setCurrentSong(nextSong);
       setQueue((prevQueue) => prevQueue.slice(1));
       setLastPlayedLibrarySongId(null);
-      setIsLibrarySong(false);
     } else {
       const newSong = getRandomSong();
       setCurrentSong({
         ...newSong,
         location: "Sevoke",
-        timestamp: new Date().toISOString(),
+        timestamp: new Date().toISOString(), // Ensure ISO string format
       });
       setLastPlayedLibrarySongId(newSong._id);
-      setIsLibrarySong(true);
     }
     setTimeRemaining(300);
   };
@@ -78,7 +73,7 @@ const LatestSongSevoke: React.FC = () => {
       setIsValidYouTubeLink(true);
     }
   }, [currentSong]);
-  // Modify the useEffect for fetching and updating
+
   useEffect(() => {
     const fetchLatestSong = async () => {
       try {
@@ -94,26 +89,20 @@ const LatestSongSevoke: React.FC = () => {
                 timestamp: new Date().toISOString(),
               });
               setLastPlayedLibrarySongId(randomSong._id);
-              setIsLibrarySong(true);
               setIsInitialLoad(false);
             } else if (!currentSong) {
               setCurrentSong(data);
-              setIsLibrarySong(false);
             } else if (
               !queue.some((song) => song._id === data._id) &&
               data._id !== currentSong._id
             ) {
-              setQueue((prevQueue) => {
-                const newQueue = [...prevQueue, data].sort(
+              setQueue((prevQueue) =>
+                [...prevQueue, data].sort(
                   (a, b) =>
                     new Date(a.timestamp).getTime() -
                     new Date(b.timestamp).getTime()
-                );
-                if (isLibrarySong && newQueue.length > 0) {
-                  playNextSong();
-                }
-                return newQueue;
-              });
+                )
+              );
             }
           }
         } else if (response.status === 204) {
@@ -130,22 +119,20 @@ const LatestSongSevoke: React.FC = () => {
 
     const fetchInterval = setInterval(fetchLatestSong, 1000);
     const timerInterval = setInterval(() => {
-      if (!isLibrarySong) {
-        setTimeRemaining((prevTime) => {
-          if (prevTime <= 1) {
-            playNextSong();
-            return 300;
-          }
-          return prevTime - 1;
-        });
-      }
+      setTimeRemaining((prevTime) => {
+        if (prevTime <= 1) {
+          playNextSong();
+          return 300;
+        }
+        return prevTime - 1;
+      });
     }, 1000);
 
     return () => {
       clearInterval(fetchInterval);
       clearInterval(timerInterval);
     };
-  }, [currentSong, queue, isInitialLoad, isLibrarySong]);
+  }, [currentSong, queue, isInitialLoad]);
 
   const onPlayerStateChange = (event: YT.OnStateChangeEvent) => {
     if (event.data === YT.PlayerState.ENDED) {
@@ -200,93 +187,89 @@ const LatestSongSevoke: React.FC = () => {
   };
 
   return (
-    <div className="relative">
-      {/* Profile component in the top right corner */}
-      <div className="hidden lg:block absolute top-0 right-0 m-4">
-        <Profile />
-      </div>
-
-      {/* Existing content */}
-      <div>
-        {currentSong ? (
-          <div className="ml-4">
-            <h2 className="py-2 text-2xl font-bold">Current Song in Sevoke</h2>
-            <p>
-              <strong>Location:</strong> {currentSong.location}
-            </p>
-            <p>
-              <strong>YouTube Link:</strong> {currentSong.youtubeLink}
-            </p>
-            <p>
-              <strong>Name:</strong> {currentSong.name}
-            </p>
-            <p>
-              <strong>Last Updated:</strong>{" "}
-              {formatTimestamp(currentSong.timestamp)}
-            </p>
-            {!isLibrarySong && (
-              <p>
-                <strong>Time until next song:</strong>{" "}
-                {formatTime(timeRemaining)}
-              </p>
-            )}
-
-            {isValidYouTubeLink &&
-            getYouTubeVideoId(currentSong?.youtubeLink) ? (
-              <YouTube
-                key={`${currentSong._id}-${playerKey}`}
-                videoId={getYouTubeVideoId(currentSong.youtubeLink)!}
-                opts={{
-                  height: "390",
-                  width: "640",
-                  playerVars: {
-                    autoplay: 1,
-                  },
-                }}
-                onReady={onPlayerReady}
-                onStateChange={onPlayerStateChange}
-                onError={onPlayerError}
-                className="my-4"
-              />
-            ) : (
-              <p>Loading new video...</p>
-            )}
-
-            <div className="flex space-x-4 mt-4">
-              <button
-                className="btn m-4 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
-                onClick={handleNextClick}
-              >
-                Next
-              </button>
-              <button
-                className="btn m-4 bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
-                onClick={handleResetClick}
-              >
-                Reset
-              </button>
-            </div>
-          </div>
-        ) : (
-          <p>Loading...</p>
-        )}
-        {queue.length > 0 && (
-          <div className="ml-4">
-            <h3>Next in Queue:</h3>
-            {queue.map((song, index) => (
-              <div key={song._id}>
-                <p>
-                  <strong>
-                    {index + 1}. {song.name}
-                  </strong>{" "}
-                  - {song.youtubeLink}
-                </p>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
+     <div className="relative">
+    {/* Profile component in the top right corner */}
+    <div className="hidden lg:block absolute top-0 right-0 m-4">
+      <Profile />
     </div>
+
+    {/* Existing content */}
+    <div>
+      {currentSong ? (
+        <div className="ml-4">
+          <h2 className="py-2 text-2xl font-bold">Current Song in Sevoke</h2>
+          <p>
+            <strong>Location:</strong> {currentSong.location}
+          </p>
+          <p>
+            <strong>YouTube Link:</strong> {currentSong.youtubeLink}
+          </p>
+          <p>
+            <strong>Name:</strong> {currentSong.name}
+          </p>
+          <p>
+            <strong>Last Updated:</strong>{" "}
+            {formatTimestamp(currentSong.timestamp)}
+          </p>
+          <p>
+            <strong>Time until next song:</strong> {formatTime(timeRemaining)}
+          </p>
+
+          {isValidYouTubeLink && getYouTubeVideoId(currentSong?.youtubeLink) ? (
+            <YouTube
+              key={`${currentSong._id}-${playerKey}`}
+              videoId={getYouTubeVideoId(currentSong.youtubeLink)!}
+              opts={{
+                height: "390",
+                width: "640",
+                playerVars: {
+                  autoplay: 1,
+                },
+              }}
+              onReady={onPlayerReady}
+              onStateChange={onPlayerStateChange}
+              onError={onPlayerError}
+              className="my-4"
+            />
+          ) : (
+            <p>Loading new video...</p>
+          )}
+
+          <div className="flex space-x-4 mt-4">
+            <button
+              className="btn m-4 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+              onClick={handleNextClick}
+            >
+              Next
+            </button>
+            <button
+              className="btn m-4 bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
+              onClick={handleResetClick}
+            >
+              Reset
+            </button>
+          </div>
+        </div>
+      ) : (
+        <p>Loading...</p>
+      )}
+      {queue.length > 0 && (
+        <div className="ml-4">
+          <h3>Next in Queue:</h3>
+          {queue.map((song, index) => (
+            <div key={song._id}>
+              <p>
+                <strong>
+                  {index + 1}. {song.name}
+                </strong>{" "}
+                - {song.youtubeLink}
+              </p>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  </div>
   );
 };
 
