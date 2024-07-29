@@ -2,29 +2,38 @@
 const songLibrary = [
   {
     _id: "lib_1",
-    youtubeLink: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+    youtubeLink: "https://www.youtube.com/watch?v=glhfnCIGfj0",
     name: "Song 1",
   },
   {
     _id: "lib_2",
-    youtubeLink: "https://www.youtube.com/watch?v=L_jWHffIx5E",
+    youtubeLink: "https://www.youtube.com/watch?v=QwaoqKPupsE",
     name: "Song 2",
   },
   {
     _id: "lib_3",
-    youtubeLink: "https://youtu.be/izGwDsrQ1eQ?si=3vGO28sU66GynBZt",
+    youtubeLink: "https://www.youtube.com/watch?v=5a_v4yTl_JY",
     name: "Song 3",
   },
   {
     _id: "lib_5",
-    youtubeLink:
-      "https://www.youtube.com/watch?v=kJQP7kiw5Fk&list=PL15B1E77BB5708555",
+    youtubeLink: "https://www.youtube.com/watch?v=YCiAgkIj8SA",
     name: "Song 5",
   },
   {
     _id: "lib_6",
-    youtubeLink: "https://youtu.be/60ItHLz5WEA?si=a4Yi7N_THx0dvh9m",
+    youtubeLink: "https://www.youtube.com/watch?v=MYPVQccHhAQ",
     name: "Song 6",
+  },
+  {
+    _id: "lib_7",
+    youtubeLink: "https://www.youtube.com/watch?v=1T6H0qGjL-E",
+    name: "Song 7",
+  },
+  {
+    _id: "lib_8",
+    youtubeLink: "https://www.youtube.com/watch?v=xLhMgCfqays",
+    name: "Song 8",
   },
 ];
 export default songLibrary;
