@@ -51,29 +51,29 @@ const LatestSongSevoke: React.FC = () => {
   };
 
   //fine
-  const playNextSong = () => {
-    if (queue.length > 0) {
-      const nextSong = queue[0];
-      if (currentSong && nextSong.youtubeLink === currentSong.youtubeLink) {
-        setPlayerKey((prevKey) => prevKey + 1);
-      }
-      setCurrentSong(nextSong);
-      setQueue((prevQueue) => prevQueue.slice(1));
-        setLastPlayedLibrarySongId(null);
-        setIsLibrarySong(false);
-        setTimeRemaining(300);
-    } else {
-      const newSong = getRandomSong();
-      setCurrentSong({
-        ...newSong,
-        location: "Sevoke",
-        timestamp: new Date().toISOString(), // Ensure ISO string format
-      });
-     setLastPlayedLibrarySongId(newSong._id);
-     setIsLibrarySong(true);
-     setTimeRemaining(null);
+const playNextSong = () => {
+  if (queue.length > 0) {
+    const nextSong = queue[0];
+    if (currentSong && nextSong.youtubeLink === currentSong.youtubeLink) {
+      setPlayerKey((prevKey) => prevKey + 1);
     }
-  };
+    setCurrentSong(nextSong);
+    setQueue((prevQueue) => prevQueue.slice(1));
+    setLastPlayedLibrarySongId(null);
+    setIsLibrarySong(false);
+    setTimeRemaining(300);
+  } else {
+    const newSong = getRandomSong();
+    setCurrentSong({
+      ...newSong,
+      location: "Sevoke",
+      timestamp: new Date().toISOString(),
+    });
+    setLastPlayedLibrarySongId(newSong._id);
+    setIsLibrarySong(true);
+    setTimeRemaining(null);
+  }
+};
 
   //fine, to validate youtube link
   useEffect(() => {
@@ -85,69 +85,72 @@ const LatestSongSevoke: React.FC = () => {
   }, [currentSong]);
 
   //fine ig this is suspicious
-  useEffect(() => {
-    const fetchLatestSong = async () => {
-      try {
-        const response = await fetch("/api/getLatest?location=Sevoke");
-        if (response.status === 200) {
-          const data: Song = await response.json();
-          if (data.location === "Sevoke") {
-            if (isInitialLoad) {
-              const randomSong = getRandomSong();
-              setCurrentSong({
-                ...randomSong,
-                location: "Sevoke",
-                timestamp: new Date().toISOString(),
-              });
-              setLastPlayedLibrarySongId(randomSong._id);
-              setIsInitialLoad(false);
-            } else if (!currentSong) {
-              setCurrentSong(data);
-            } else if (
-              !queue.some((song) => song._id === data._id) &&
-              data._id !== currentSong._id
-            ) {
-              setQueue((prevQueue) =>
-                [...prevQueue, data].sort(
-                  (a, b) =>
-                    new Date(a.timestamp).getTime() -
-                    new Date(b.timestamp).getTime()
-                )
-              );
-            }
-          }
-        } else if (response.status === 204) {
-          // No new data, do nothing
-        } else {
-          console.error("Error fetching latest song:", response.statusText);
-        }
-      } catch (error) {
-        console.error("Error fetching latest song:", error);
-      }
-    };
+ useEffect(() => {
+   const fetchLatestSong = async () => {
+     try {
+       const response = await fetch("/api/getLatest?location=Sevoke");
+       if (response.status === 200) {
+         const data: Song = await response.json();
+         if (data.location === "Sevoke") {
+           if (isInitialLoad) {
+             const randomSong = getRandomSong();
+             setCurrentSong({
+               ...randomSong,
+               location: "Sevoke",
+               timestamp: new Date().toISOString(),
+             });
+             setLastPlayedLibrarySongId(randomSong._id);
+             setIsLibrarySong(true); // Set this to true for initial load
+             setTimeRemaining(null); // Set this to null for initial load
+             setIsInitialLoad(false);
+           } else if (!currentSong) {
+             setCurrentSong(data);
+             setIsLibrarySong(false); // This is a queue song
+             setTimeRemaining(300); // Set timer for queue songs
+           } else if (
+             !queue.some((song) => song._id === data._id) &&
+             data._id !== currentSong._id
+           ) {
+             setQueue((prevQueue) =>
+               [...prevQueue, data].sort(
+                 (a, b) =>
+                   new Date(a.timestamp).getTime() -
+                   new Date(b.timestamp).getTime()
+               )
+             );
+           }
+         }
+       } else if (response.status === 204) {
+         // No new data, do nothing
+       } else {
+         console.error("Error fetching latest song:", response.statusText);
+       }
+     } catch (error) {
+       console.error("Error fetching latest song:", error);
+     }
+   };
 
-    fetchLatestSong(); // Run immediately
+   fetchLatestSong(); // Run immediately
 
-    const fetchInterval = setInterval(fetchLatestSong, 1000);
-    let timerInterval: NodeJS.Timeout | null = null;
-    if (!isLibrarySong && timeRemaining !== null) {
-      timerInterval = setInterval(() => {
-        setTimeRemaining((prevTime) => {
-          if (prevTime !== null && prevTime <= 1) {
-            playNextSong();
-            return 300;
-          }
-          return prevTime !== null ? prevTime - 1 : null;
-        });
-      }, 1000);
-    }
+   const fetchInterval = setInterval(fetchLatestSong, 1000);
+   let timerInterval: NodeJS.Timeout | null = null;
+   if (!isLibrarySong && timeRemaining !== null) {
+     timerInterval = setInterval(() => {
+       setTimeRemaining((prevTime) => {
+         if (prevTime !== null && prevTime <= 1) {
+           playNextSong();
+           return 300;
+         }
+         return prevTime !== null ? prevTime - 1 : null;
+       });
+     }, 1000);
+   }
 
-    return () => {
-      clearInterval(fetchInterval);
-      if (timerInterval) clearInterval(timerInterval);
-    };
-  }, [currentSong, queue, isInitialLoad, isLibrarySong, timeRemaining]);
-
+   return () => {
+     clearInterval(fetchInterval);
+     if (timerInterval) clearInterval(timerInterval);
+   };
+ }, [currentSong, queue, isInitialLoad, isLibrarySong, timeRemaining]);
 
   //fine
   const onPlayerStateChange = (event: YT.OnStateChangeEvent) => {
