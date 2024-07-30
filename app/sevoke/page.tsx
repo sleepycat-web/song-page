@@ -5,6 +5,7 @@ import React, { useEffect, useState, useRef } from "react";
 import YouTube from "react-youtube";
 import Profile from "./profile";
 
+//fine
 interface Song {
   _id: string;
   location: string;
@@ -13,6 +14,7 @@ interface Song {
   timestamp: string;
 }
 
+//fine
 const formatTimestamp = (timestamp: string): string => {
   const date = new Date(timestamp);
   return date.toLocaleString("en-US", {
@@ -28,15 +30,18 @@ const formatTimestamp = (timestamp: string): string => {
 const LatestSongSevoke: React.FC = () => {
   const [currentSong, setCurrentSong] = useState<Song | null>(null);
   const [queue, setQueue] = useState<Song[]>([]);
-  const [timeRemaining, setTimeRemaining] = useState<number>(300);
+  const [timeRemaining, setTimeRemaining] = useState<number | null>(300);
   const youtubePlayerRef = useRef<YT.Player | null>(null);
   const [playerKey, setPlayerKey] = useState(0);
+  const [isLibrarySong, setIsLibrarySong] = useState<boolean>(false);
   const [isValidYouTubeLink, setIsValidYouTubeLink] = useState(true);
   const [lastPlayedLibrarySongId, setLastPlayedLibrarySongId] = useState<
     string | null
-  >(null);
+    >(null);
+  
   const [isInitialLoad, setIsInitialLoad] = useState(true);
 
+  //fine
   const getRandomSong = () => {
     const availableSongs = songLibrary.filter(
       (song) => song._id !== lastPlayedLibrarySongId
@@ -45,6 +50,7 @@ const LatestSongSevoke: React.FC = () => {
     return availableSongs[randomIndex];
   };
 
+  //fine
   const playNextSong = () => {
     if (queue.length > 0) {
       const nextSong = queue[0];
@@ -53,7 +59,9 @@ const LatestSongSevoke: React.FC = () => {
       }
       setCurrentSong(nextSong);
       setQueue((prevQueue) => prevQueue.slice(1));
-      setLastPlayedLibrarySongId(null);
+        setLastPlayedLibrarySongId(null);
+        setIsLibrarySong(false);
+        setTimeRemaining(300);
     } else {
       const newSong = getRandomSong();
       setCurrentSong({
@@ -61,11 +69,13 @@ const LatestSongSevoke: React.FC = () => {
         location: "Sevoke",
         timestamp: new Date().toISOString(), // Ensure ISO string format
       });
-      setLastPlayedLibrarySongId(newSong._id);
+     setLastPlayedLibrarySongId(newSong._id);
+     setIsLibrarySong(true);
+     setTimeRemaining(null);
     }
-    setTimeRemaining(300);
   };
 
+  //fine, to validate youtube link
   useEffect(() => {
     if (currentSong && !getYouTubeVideoId(currentSong.youtubeLink)) {
       handleError();
@@ -74,6 +84,7 @@ const LatestSongSevoke: React.FC = () => {
     }
   }, [currentSong]);
 
+  //fine ig this is suspicious
   useEffect(() => {
     const fetchLatestSong = async () => {
       try {
@@ -118,33 +129,40 @@ const LatestSongSevoke: React.FC = () => {
     fetchLatestSong(); // Run immediately
 
     const fetchInterval = setInterval(fetchLatestSong, 1000);
-    const timerInterval = setInterval(() => {
-      setTimeRemaining((prevTime) => {
-        if (prevTime <= 1) {
-          playNextSong();
-          return 300;
-        }
-        return prevTime - 1;
-      });
-    }, 1000);
+    let timerInterval: NodeJS.Timeout | null = null;
+    if (!isLibrarySong && timeRemaining !== null) {
+      timerInterval = setInterval(() => {
+        setTimeRemaining((prevTime) => {
+          if (prevTime !== null && prevTime <= 1) {
+            playNextSong();
+            return 300;
+          }
+          return prevTime !== null ? prevTime - 1 : null;
+        });
+      }, 1000);
+    }
 
     return () => {
       clearInterval(fetchInterval);
-      clearInterval(timerInterval);
+      if (timerInterval) clearInterval(timerInterval);
     };
-  }, [currentSong, queue, isInitialLoad]);
+  }, [currentSong, queue, isInitialLoad, isLibrarySong, timeRemaining]);
 
+
+  //fine
   const onPlayerStateChange = (event: YT.OnStateChangeEvent) => {
     if (event.data === YT.PlayerState.ENDED) {
       playNextSong();
     }
   };
 
+  //fine
   const onPlayerError = (event: YT.OnErrorEvent) => {
     console.error("YouTube player error:", event.data);
     handleError();
   };
 
+  //fine
   const getYouTubeVideoId = (url: string): string | null => {
     if (!url) return null;
     const regExp =
@@ -153,32 +171,39 @@ const LatestSongSevoke: React.FC = () => {
     return match && match[2].length === 11 ? match[2] : null;
   };
 
-  const formatTime = (seconds: number): string => {
-    const minutes = Math.floor(seconds / 60);
-    const remainingSeconds = seconds % 60;
-    return `${minutes}:${remainingSeconds.toString().padStart(2, "0")}`;
-  };
+  //fine
+ const formatTime = (seconds: number | null): string => {
+   if (seconds === null) return "N/A";
+   const minutes = Math.floor(seconds / 60);
+   const remainingSeconds = seconds % 60;
+   return `${minutes}:${remainingSeconds.toString().padStart(2, "0")}`;
+ };
 
+  //fine
   const onPlayerReady = (event: YT.PlayerEvent) => {
     youtubePlayerRef.current = event.target;
   };
 
+  //fine
   const handleError = () => {
     setIsValidYouTubeLink(false);
     const randomSong = getRandomSong();
     setCurrentSong({
       ...randomSong,
       location: "Sevoke",
-      timestamp: new Date().toISOString(), // Ensure ISO string format
+      timestamp: new Date().toISOString(),
     });
     setLastPlayedLibrarySongId(randomSong._id);
     setIsValidYouTubeLink(true);
+    setIsLibrarySong(true);
+    setTimeRemaining(null);
   };
-
+  //fine
   const handleNextClick = () => {
     playNextSong();
   };
 
+  //fine
   const handleResetClick = () => {
     setQueue([]);
     setIsInitialLoad(true);
@@ -211,10 +236,12 @@ const LatestSongSevoke: React.FC = () => {
               <strong>Last Updated:</strong>{" "}
               {formatTimestamp(currentSong.timestamp)}
             </p>
-            <p>
-              <strong>Time until next song:</strong> {formatTime(timeRemaining)}
-            </p>
-
+            {!isLibrarySong && timeRemaining !== null && (
+              <p>
+                <strong>Time until next song:</strong>{" "}
+                {formatTime(timeRemaining)}
+              </p>
+            )}
             {isValidYouTubeLink &&
             getYouTubeVideoId(currentSong?.youtubeLink) ? (
               <YouTube
