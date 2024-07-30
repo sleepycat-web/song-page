@@ -77,7 +77,7 @@ const Home: React.FC = () => {
         } else {
           console.log(await response.json());
            setSuccessMessage(
-             `Your song has been added to the queue at Chai Mine ${displayLocation}`
+             `Your song has been added played at ${displayLocation}`
            );
           setSelectedLocation("");
           setDisplayLocation("");
