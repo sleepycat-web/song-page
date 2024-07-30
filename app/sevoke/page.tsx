@@ -226,12 +226,19 @@ const playNextSong = () => {
   };
 
   //fine
-  const handleResetClick = () => {
-    setQueue([]);
-    setIsInitialLoad(true);
-    localStorage.removeItem("songQueue");
-    localStorage.removeItem("currentSong");
-  };
+const handleResetClick = () => {
+  setQueue([]);
+  const randomSong = getRandomSong();
+  setCurrentSong({
+    ...randomSong,
+    location: "Sevoke",
+    timestamp: new Date().toISOString(),
+  });
+  setLastPlayedLibrarySongId(randomSong._id);
+  setIsLibrarySong(true);
+  setTimeRemaining(null);
+  setIsInitialLoad(false);
+};
 
   return (
     <div className="relative">
