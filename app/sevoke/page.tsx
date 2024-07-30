@@ -41,6 +41,34 @@ const LatestSongSevoke: React.FC = () => {
   
   const [isInitialLoad, setIsInitialLoad] = useState(true);
 
+  //new fn
+const handleNewSong = (newSong: Song) => {
+  if (isLibrarySong) {
+    // If a library song is playing, interrupt it and play the new queue song
+    setCurrentSong(newSong);
+    setIsLibrarySong(false);
+    setTimeRemaining(300);
+
+    //
+    setQueue((prevQueue) => [
+      ...prevQueue.filter((song) => song._id !== newSong._id),
+    ]);
+  } else {
+    // If a queue song is playing, add the new song to the queue
+    setQueue((prevQueue) => {
+      if (!prevQueue.some((song) => song._id === newSong._id)) {
+        return [...prevQueue, newSong].sort(
+          (a, b) =>
+            new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
+        );
+      }
+      return prevQueue;
+    });
+  }
+};
+
+
+
   //fine
   const getRandomSong = () => {
     const availableSongs = songLibrary.filter(
@@ -100,24 +128,15 @@ const playNextSong = () => {
                timestamp: new Date().toISOString(),
              });
              setLastPlayedLibrarySongId(randomSong._id);
-             setIsLibrarySong(true); // Set this to true for initial load
-             setTimeRemaining(null); // Set this to null for initial load
+             setIsLibrarySong(true);
+             setTimeRemaining(null);
              setIsInitialLoad(false);
            } else if (!currentSong) {
              setCurrentSong(data);
-             setIsLibrarySong(false); // This is a queue song
-             setTimeRemaining(300); // Set timer for queue songs
-           } else if (
-             !queue.some((song) => song._id === data._id) &&
-             data._id !== currentSong._id
-           ) {
-             setQueue((prevQueue) =>
-               [...prevQueue, data].sort(
-                 (a, b) =>
-                   new Date(a.timestamp).getTime() -
-                   new Date(b.timestamp).getTime()
-               )
-             );
+             setIsLibrarySong(false);
+             setTimeRemaining(300);
+           } else if (data._id !== currentSong._id) {
+             handleNewSong(data);
            }
          }
        } else if (response.status === 204) {
@@ -133,6 +152,7 @@ const playNextSong = () => {
    fetchLatestSong(); // Run immediately
 
    const fetchInterval = setInterval(fetchLatestSong, 1000);
+
    let timerInterval: NodeJS.Timeout | null = null;
    if (!isLibrarySong && timeRemaining !== null) {
      timerInterval = setInterval(() => {
@@ -151,7 +171,6 @@ const playNextSong = () => {
      if (timerInterval) clearInterval(timerInterval);
    };
  }, [currentSong, queue, isInitialLoad, isLibrarySong, timeRemaining]);
-
   //fine
   const onPlayerStateChange = (event: YT.OnStateChangeEvent) => {
     if (event.data === YT.PlayerState.ENDED) {
