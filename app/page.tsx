@@ -77,7 +77,7 @@ const Home: React.FC = () => {
         } else {
           console.log(await response.json());
            setSuccessMessage(
-             `Your song has been added played at ${displayLocation}`
+             `Your song has been played at ${displayLocation}`
            );
           setSelectedLocation("");
           setDisplayLocation("");
