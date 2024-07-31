@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 
 interface FormData {
@@ -19,36 +19,6 @@ const Home: React.FC = () => {
   const [duplicateError, setDuplicateError] = useState<string>("");
   const detailsRef = useRef<HTMLDetailsElement>(null);
   const router = useRouter();
-
-  useEffect(() => {
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        async (position) => {
-          const { latitude, longitude } = position.coords;
-          try {
-            const response = await fetch("/api/getLocation", {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-              },
-              body: JSON.stringify({ latitude, longitude }),
-            });
-            const data = await response.json();
-            if (data.location) {
-              handleLocationSelect(data.location);
-            }
-          } catch (error) {
-            console.error("Error getting location:", error);
-          }
-        },
-        (error) => {
-          console.error("Error getting geolocation:", error);
-        }
-      );
-    } else {
-      console.log("Geolocation is not supported by this browser.");
-    }
-  }, []);
 
   const handleLocationSelect = (location: string) => {
     setSelectedLocation(location);
