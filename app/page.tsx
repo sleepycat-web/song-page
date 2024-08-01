@@ -20,36 +20,36 @@ const Home: React.FC = () => {
   const detailsRef = useRef<HTMLDetailsElement>(null);
   const router = useRouter();
 
-  useEffect(() => {
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        async (position) => {
-          const { latitude, longitude } = position.coords;
-          try {
-            const response = await fetch("/api/getLocation", {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-              },
-              body: JSON.stringify({ latitude, longitude }),
-            });
-            const data = await response.json();
-            if (data.location) {
-              handleLocationSelect(data.location);
-            }
-          } catch (error) {
-            console.error("Error getting location:", error);
-          }
-        },
-        (error) => {
-          console.error("Error getting geolocation:", error);
-        }
-      );
-    } else {
-      console.log("Geolocation is not supported by this browser.");
-    }
-  }, []);
-
+ useEffect(() => {
+   if (navigator.geolocation) {
+     navigator.geolocation.getCurrentPosition(
+       async (position) => {
+         const { latitude, longitude } = position.coords;
+         try {
+           const response = await fetch("/api/getLocation", {
+             method: "POST",
+             headers: {
+               "Content-Type": "application/json",
+             },
+             body: JSON.stringify({ latitude, longitude }),
+           });
+           const data = await response.json();
+           if (data.location) {
+             handleLocationSelect(data.location);
+           }
+         } catch (error) {
+           console.error("Error getting location:", error);
+         }
+       },
+       (error) => {
+         console.error("Error getting geolocation:", error);
+       }
+     );
+   } else {
+     console.log("Geolocation is not supported by this browser.");
+   }
+ }, []);
+  
   const handleLocationSelect = (location: string) => {
     setSelectedLocation(location);
     setDisplayLocation(location === "Sevoke" ? "Sevoke Road" : location);
@@ -80,6 +80,52 @@ const Home: React.FC = () => {
         name,
       };
 
+      //     try {
+      //       const response = await fetch("/api/submitForm", {
+      //         method: "POST",
+      //         headers: {
+      //           "Content-Type": "application/json",
+      //         },
+      //         body: JSON.stringify(formData),
+      //       });
+
+      //       if (!response.ok) {
+      //         const errorData = await response.json();
+
+      //         if (response.status === 400) {
+      //           if (errorData.error === "duplicate_song") {
+      //             setDuplicateError(
+      //               "This song is already in the queue for the selected location. Please choose a different song."
+      //             );
+      //           } else {
+      //             setDuplicateError(
+      //               "An error occurred while submitting the form. Please try again."
+      //             );
+      //           }
+      //         } else {
+      //           throw new Error("Failed to submit data");
+      //         }
+      //       } else {
+      //         console.log(await response.json());
+      //         setSuccessMessage(
+      //           `Your song has been played at Chai Mine ${displayLocation}`
+      //         );
+      //         setSelectedLocation("");
+      //         setDisplayLocation("");
+      //         setYoutubeLink("");
+      //         setName("");
+      //         setShowValidation(false);
+      //         setDuplicateError(""); // Clear any previous error messages
+      //       }
+      //     } catch (error) {
+      //       console.error("Error:", error);
+      //       setDuplicateError(
+      //         "An unexpected error occurred. Please try again later."
+      //       );
+      //     }
+      //   }
+      // };
+
       try {
         const response = await fetch("/api/submitForm", {
           method: "POST",
@@ -91,19 +137,9 @@ const Home: React.FC = () => {
 
         if (!response.ok) {
           const errorData = await response.json();
-          if (response.status === 400) {
-            if (errorData.error === "duplicate_song") {
-              setDuplicateError(
-                "This song is already in the queue for the selected location. Please choose a different song."
-              );
-            } else {
-              setDuplicateError(
-                "An error occurred while submitting the form. Please try again."
-              );
-            }
-          } else {
-            throw new Error("Failed to submit data");
-          }
+          setDuplicateError(
+            "An error occurred while submitting the form. Please try again."
+          );
         } else {
           console.log(await response.json());
           setSuccessMessage(
@@ -124,7 +160,7 @@ const Home: React.FC = () => {
       }
     }
   };
-
+  
   const allFieldsFilled = selectedLocation && youtubeLink.trim() && name;
   const isYoutubeLinkValid = isValidYoutubeLink(youtubeLink);
 
