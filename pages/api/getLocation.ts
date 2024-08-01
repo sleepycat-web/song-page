@@ -12,7 +12,7 @@ type Location = {
 const locations: Location[] = [
   {
     name: "Dagapur",
-    coordinates: { latitude: 27.1826, longitude: 88.5018 }, // Approximate coordinates
+    coordinates: { latitude: 26.7271, longitude: 88.3953 }, // Approximate coordinates
     radius: 1000, // 1km radius
   },
   {
