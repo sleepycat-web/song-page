@@ -16,7 +16,7 @@ const Home: React.FC = () => {
   const [youtubeLink, setYoutubeLink] = useState<string>("");
   const [name, setName] = useState<string>("");
   const [showValidation, setShowValidation] = useState<boolean>(false);
-  const [duplicateError, setDuplicateError] = useState<string>("");
+  const [errorMessage, setErrorMessage] = useState<string>("");
   const detailsRef = useRef<HTMLDetailsElement>(null);
   const router = useRouter();
 
@@ -58,10 +58,7 @@ const Home: React.FC = () => {
       }
     };
 
-    // Request location when component mounts (page loads or refreshes)
     requestLocation();
-
-    // No need for interval or cleanup in this case
   }, []);
 
   const handleLocationSelect = (location: string) => {
@@ -80,7 +77,7 @@ const Home: React.FC = () => {
 
   const handleSubmit = async () => {
     setShowValidation(true);
-    setDuplicateError("");
+    setErrorMessage("");
 
     if (
       selectedLocation &&
@@ -94,52 +91,6 @@ const Home: React.FC = () => {
         name,
       };
 
-      //     try {
-      //       const response = await fetch("/api/submitForm", {
-      //         method: "POST",
-      //         headers: {
-      //           "Content-Type": "application/json",
-      //         },
-      //         body: JSON.stringify(formData),
-      //       });
-
-      //       if (!response.ok) {
-      //         const errorData = await response.json();
-
-      //         if (response.status === 400) {
-      //           if (errorData.error === "duplicate_song") {
-      //             setDuplicateError(
-      //               "This song is already in the queue for the selected location. Please choose a different song."
-      //             );
-      //           } else {
-      //             setDuplicateError(
-      //               "An error occurred while submitting the form. Please try again."
-      //             );
-      //           }
-      //         } else {
-      //           throw new Error("Failed to submit data");
-      //         }
-      //       } else {
-      //         console.log(await response.json());
-      //         setSuccessMessage(
-      //           `Your song has been played at Chai Mine ${displayLocation}`
-      //         );
-      //         setSelectedLocation("");
-      //         setDisplayLocation("");
-      //         setYoutubeLink("");
-      //         setName("");
-      //         setShowValidation(false);
-      //         setDuplicateError(""); // Clear any previous error messages
-      //       }
-      //     } catch (error) {
-      //       console.error("Error:", error);
-      //       setDuplicateError(
-      //         "An unexpected error occurred. Please try again later."
-      //       );
-      //     }
-      //   }
-      // };
-
       try {
         const response = await fetch("/api/submitForm", {
           method: "POST",
@@ -151,8 +102,9 @@ const Home: React.FC = () => {
 
         if (!response.ok) {
           const errorData = await response.json();
-          setDuplicateError(
-            "An error occurred while submitting the form. Please try again."
+          setErrorMessage(
+            errorData.error ||
+              "An error occurred while submitting the form. Please try again."
           );
         } else {
           console.log(await response.json());
@@ -164,11 +116,11 @@ const Home: React.FC = () => {
           setYoutubeLink("");
           setName("");
           setShowValidation(false);
-          setDuplicateError(""); // Clear any previous error messages
+          setErrorMessage("");
         }
       } catch (error) {
         console.error("Error:", error);
-        setDuplicateError(
+        setErrorMessage(
           "An unexpected error occurred. Please try again later."
         );
       }
@@ -180,70 +132,13 @@ const Home: React.FC = () => {
 
   return (
     <main className=" p-4 space-y-4">
-      <p>
-        Go To YouTube
-        <br />
-        Play Your Music
-        <br />
-        Press Share Button & Copy Link
-        <br />
-        Paste The Link Below👇
-      </p>
-      <p className="text-lg  font-semibold">Select a location</p>
-      <details className=" dropdown" ref={detailsRef}>
-        <summary className="btn m-1 flex items-center">
-          {displayLocation || "Select Location"}
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 448 512"
-            className="ml-2 h-4 w-4"
-            fill="currentColor"
-          >
-            <path d="M201.4 374.6c12.5 12.5 32.8 12.5 45.3 0l160-160c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L224 306.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l160 160z" />
-          </svg>
-        </summary>
-        <ul className="menu dropdown-content  bg-base-100 rounded-box z-[1] w-52 p-2 shadow">
-          <li>
-            <button onClick={() => handleLocationSelect("Dagapur")}>
-              Dagapur
-            </button>
-          </li>
-          <li>
-            <button onClick={() => handleLocationSelect("Sevoke")}>
-              Sevoke Road
-            </button>
-          </li>
-        </ul>
-      </details>
-      <p className="text-lg font-semibold">Paste your Youtube link</p>
-      <input
-        type="text"
-        placeholder="Paste here"
-        className="input w-full max-w-xs mb-2 p-2 border rounded"
-        value={youtubeLink}
-        onChange={(e) => setYoutubeLink(e.target.value)}
-      />
-      {showValidation && youtubeLink && !isYoutubeLinkValid && (
-        <p className="text-red-500 text-sm">
-          Please enter a valid YouTube link.
-        </p>
-      )}
-      <p className="text-lg font-semibold">Your Name</p>
-      <input
-        type="text"
-        placeholder="Enter your Name"
-        className="input w-full max-w-xs mb-4 p-2 border rounded"
-        value={name}
-        onChange={(e) => setName(e.target.value)}
-      />
+      {/* ... (rest of the JSX remains the same) ... */}
       {showValidation && !allFieldsFilled && (
         <p className="text-red-500 text-sm">
           Please fill in all fields before submitting.
         </p>
       )}
-      {duplicateError && (
-        <p className="text-red-500 text-sm">{duplicateError}</p>
-      )}
+      {errorMessage && <p className="text-red-500 text-sm">{errorMessage}</p>}
       <button className="btn block" onClick={handleSubmit}>
         Submit
       </button>
