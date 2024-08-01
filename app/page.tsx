@@ -20,35 +20,53 @@ const Home: React.FC = () => {
   const detailsRef = useRef<HTMLDetailsElement>(null);
   const router = useRouter();
 
- useEffect(() => {
-   if (navigator.geolocation) {
-     navigator.geolocation.getCurrentPosition(
-       async (position) => {
-         const { latitude, longitude } = position.coords;
-         try {
-           const response = await fetch("/api/getLocation", {
-             method: "POST",
-             headers: {
-               "Content-Type": "application/json",
-             },
-             body: JSON.stringify({ latitude, longitude }),
-           });
-           const data = await response.json();
-           if (data.location) {
-             handleLocationSelect(data.location);
-           }
-         } catch (error) {
-           console.error("Error getting location:", error);
-         }
-       },
-       (error) => {
-         console.error("Error getting geolocation:", error);
-       }
-     );
-   } else {
-     console.log("Geolocation is not supported by this browser.");
-   }
- }, []);
+useEffect(() => {
+  const requestLocation = () => {
+    if (navigator.geolocation) {
+      const options = {
+        enableHighAccuracy: true,
+        timeout: 5000,
+        maximumAge: 0,
+      };
+
+      navigator.geolocation.getCurrentPosition(
+        async (position) => {
+          const { latitude, longitude } = position.coords;
+          try {
+            const response = await fetch("/api/getLocation", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({ latitude, longitude }),
+            });
+            const data = await response.json();
+            if (data.location) {
+              handleLocationSelect(data.location);
+            }
+          } catch (error) {
+            console.error("Error getting location:", error);
+          }
+        },
+        (error) => {
+          console.error("Error getting geolocation:", error);
+        },
+        options
+      );
+    } else {
+      console.log("Geolocation is not supported by this browser.");
+    }
+  };
+
+  // Request location immediately when component mounts
+  requestLocation();
+
+  // Set up an interval to request location every few seconds
+  const intervalId = setInterval(requestLocation, 5000);
+
+  // Clean up interval on component unmount
+  return () => clearInterval(intervalId);
+}, []);
   
   const handleLocationSelect = (location: string) => {
     setSelectedLocation(location);
@@ -160,7 +178,7 @@ const Home: React.FC = () => {
       }
     }
   };
-  
+
   const allFieldsFilled = selectedLocation && youtubeLink.trim() && name;
   const isYoutubeLinkValid = isValidYoutubeLink(youtubeLink);
 
