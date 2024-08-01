@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 
 interface FormData {
@@ -20,50 +20,6 @@ const Home: React.FC = () => {
   const detailsRef = useRef<HTMLDetailsElement>(null);
   const router = useRouter();
 
-useEffect(() => {
-  const requestLocation = () => {
-    if (navigator.geolocation) {
-      const options = {
-        enableHighAccuracy: true,
-        timeout: 5000,
-        maximumAge: 0,
-      };
-
-      navigator.geolocation.getCurrentPosition(
-        async (position) => {
-          const { latitude, longitude } = position.coords;
-          try {
-            const response = await fetch("/api/getLocation", {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-              },
-              body: JSON.stringify({ latitude, longitude }),
-            });
-            const data = await response.json();
-            if (data.location) {
-              handleLocationSelect(data.location);
-            }
-          } catch (error) {
-            console.error("Error getting location:", error);
-          }
-        },
-        (error) => {
-          console.error("Error getting geolocation:", error);
-        },
-        options
-      );
-    } else {
-      console.log("Geolocation is not supported by this browser.");
-    }
-  };
-
-  // Request location when component mounts (page loads or refreshes)
-  requestLocation();
-
-  // No need for interval or cleanup in this case
-}, []);
-  
   const handleLocationSelect = (location: string) => {
     setSelectedLocation(location);
     setDisplayLocation(location === "Sevoke" ? "Sevoke Road" : location);
@@ -94,52 +50,6 @@ useEffect(() => {
         name,
       };
 
-      //     try {
-      //       const response = await fetch("/api/submitForm", {
-      //         method: "POST",
-      //         headers: {
-      //           "Content-Type": "application/json",
-      //         },
-      //         body: JSON.stringify(formData),
-      //       });
-
-      //       if (!response.ok) {
-      //         const errorData = await response.json();
-
-      //         if (response.status === 400) {
-      //           if (errorData.error === "duplicate_song") {
-      //             setDuplicateError(
-      //               "This song is already in the queue for the selected location. Please choose a different song."
-      //             );
-      //           } else {
-      //             setDuplicateError(
-      //               "An error occurred while submitting the form. Please try again."
-      //             );
-      //           }
-      //         } else {
-      //           throw new Error("Failed to submit data");
-      //         }
-      //       } else {
-      //         console.log(await response.json());
-      //         setSuccessMessage(
-      //           `Your song has been played at Chai Mine ${displayLocation}`
-      //         );
-      //         setSelectedLocation("");
-      //         setDisplayLocation("");
-      //         setYoutubeLink("");
-      //         setName("");
-      //         setShowValidation(false);
-      //         setDuplicateError(""); // Clear any previous error messages
-      //       }
-      //     } catch (error) {
-      //       console.error("Error:", error);
-      //       setDuplicateError(
-      //         "An unexpected error occurred. Please try again later."
-      //       );
-      //     }
-      //   }
-      // };
-
       try {
         const response = await fetch("/api/submitForm", {
           method: "POST",
@@ -151,9 +61,19 @@ useEffect(() => {
 
         if (!response.ok) {
           const errorData = await response.json();
-          setDuplicateError(
-            "An error occurred while submitting the form. Please try again."
-          );
+          if (response.status === 400) {
+            if (errorData.error === "duplicate_song") {
+              setDuplicateError(
+                "This song is already in the queue for the selected location. Please choose a different song."
+              );
+            } else {
+              setDuplicateError(
+                "An error occurred while submitting the form. Please try again."
+              );
+            }
+          } else {
+            throw new Error("Failed to submit data");
+          }
         } else {
           console.log(await response.json());
           setSuccessMessage(
