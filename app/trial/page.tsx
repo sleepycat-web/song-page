@@ -17,70 +17,56 @@ const Home: React.FC = () => {
   const [name, setName] = useState<string>("");
   const [showValidation, setShowValidation] = useState<boolean>(false);
   const [duplicateError, setDuplicateError] = useState<string>("");
-  const [isLoadingLocation, setIsLoadingLocation] = useState<boolean>(false);
-  const [locationError, setLocationError] = useState<string>("");
   const detailsRef = useRef<HTMLDetailsElement>(null);
   const router = useRouter();
 
   useEffect(() => {
-    const requestLocation = async () => {
+    const requestLocation = () => {
       if (navigator.geolocation) {
-        setIsLoadingLocation(true);
-        setLocationError("");
-
         const options = {
           enableHighAccuracy: true,
           timeout: 5000,
           maximumAge: 0,
         };
 
-        try {
-          const position = await new Promise<GeolocationPosition>(
-            (resolve, reject) => {
-              navigator.geolocation.getCurrentPosition(
-                resolve,
-                reject,
-                options
-              );
+        navigator.geolocation.getCurrentPosition(
+          async (position) => {
+            const { latitude, longitude } = position.coords;
+            try {
+              const response = await fetch("/api/getLocation", {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ latitude, longitude }),
+              });
+              const data = await response.json();
+              if (data.location) {
+                handleLocationSelect(data.location);
+              }
+            } catch (error) {
+              console.error("Error getting location:", error);
             }
-          );
-
-          const { latitude, longitude } = position.coords;
-          const response = await fetch("/api/getLocation", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({ latitude, longitude }),
-          });
-
-          if (!response.ok) {
-            throw new Error("Failed to fetch location");
-          }
-
-          const data = await response.json();
-          if (data.location) {
-            handleLocationSelect(data.location);
-          }
-        } catch (error) {
-          console.error("Error getting location:", error);
-          setLocationError(
-            "Failed to detect location. Please select manually."
-          );
-        } finally {
-          setIsLoadingLocation(false);
-        }
+          },
+          (error) => {
+            console.error("Error getting geolocation:", error);
+          },
+          options
+        );
       } else {
-        setLocationError("Geolocation is not supported by this browser.");
+        console.log("Geolocation is not supported by this browser.");
       }
     };
 
+    // Request location when component mounts (page loads or refreshes)
     requestLocation();
+
+    // No need for interval or cleanup in this case
   }, []);
 
   const handleLocationSelect = (location: string) => {
     setSelectedLocation(location);
-    setDisplayLocation(location === "Sevoke" ? "Sevoke Road Trial" : "Dagapur Trial");
+    setDisplayLocation(location === "Sevoke" ? "Sevoke Road" : location);
     if (detailsRef.current) {
       detailsRef.current.open = false;
     }
@@ -97,57 +83,103 @@ const Home: React.FC = () => {
     setDuplicateError("");
 
     if (
-      !selectedLocation ||
-      !youtubeLink.trim() ||
-      !name ||
-      !isValidYoutubeLink(youtubeLink)
+      selectedLocation &&
+      youtubeLink.trim() &&
+      name &&
+      isValidYoutubeLink(youtubeLink)
     ) {
-      setDuplicateError(
-        "Please fill in all fields correctly before submitting."
-      );
-      return;
-    }
+      const formData: FormData = {
+        location: selectedLocation,
+        youtubeLink,
+        name,
+      };
 
-    const formData: FormData = {
-      location: selectedLocation,
-      youtubeLink,
-      name,
-    };
+      //     try {
+      //       const response = await fetch("/api/submitForm", {
+      //         method: "POST",
+      //         headers: {
+      //           "Content-Type": "application/json",
+      //         },
+      //         body: JSON.stringify(formData),
+      //       });
 
-    try {
-      const response = await fetch("/api/submitForm", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(formData),
-      });
+      //       if (!response.ok) {
+      //         const errorData = await response.json();
 
-      if (!response.ok) {
-        throw new Error("Failed to submit form");
+      //         if (response.status === 400) {
+      //           if (errorData.error === "duplicate_song") {
+      //             setDuplicateError(
+      //               "This song is already in the queue for the selected location. Please choose a different song."
+      //             );
+      //           } else {
+      //             setDuplicateError(
+      //               "An error occurred while submitting the form. Please try again."
+      //             );
+      //           }
+      //         } else {
+      //           throw new Error("Failed to submit data");
+      //         }
+      //       } else {
+      //         console.log(await response.json());
+      //         setSuccessMessage(
+      //           `Your song has been played at Chai Mine ${displayLocation}`
+      //         );
+      //         setSelectedLocation("");
+      //         setDisplayLocation("");
+      //         setYoutubeLink("");
+      //         setName("");
+      //         setShowValidation(false);
+      //         setDuplicateError(""); // Clear any previous error messages
+      //       }
+      //     } catch (error) {
+      //       console.error("Error:", error);
+      //       setDuplicateError(
+      //         "An unexpected error occurred. Please try again later."
+      //       );
+      //     }
+      //   }
+      // };
+
+      try {
+        const response = await fetch("/api/submitForm", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(formData),
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          setDuplicateError(
+            "An error occurred while submitting the form. Please try again."
+          );
+        } else {
+          console.log(await response.json());
+          setSuccessMessage(
+            `Your song has been played at Chai Mine ${displayLocation}`
+          );
+          setSelectedLocation("");
+          setDisplayLocation("");
+          setYoutubeLink("");
+          setName("");
+          setShowValidation(false);
+          setDuplicateError(""); // Clear any previous error messages
+        }
+      } catch (error) {
+        console.error("Error:", error);
+        setDuplicateError(
+          "An unexpected error occurred. Please try again later."
+        );
       }
-
-      const data = await response.json();
-      console.log(data);
-      setSuccessMessage(
-        `Your song has been played at Chai Mine ${displayLocation}`
-      );
-      setSelectedLocation("");
-      setDisplayLocation("");
-      setYoutubeLink("");
-      setName("");
-      setShowValidation(false);
-      setDuplicateError("");
-    } catch (error) {
-      console.error("Error:", error);
-      setDuplicateError(
-        "An unexpected error occurred. Please try again later."
-      );
     }
   };
 
+  const allFieldsFilled = selectedLocation && youtubeLink.trim() && name;
+  const isYoutubeLinkValid = isValidYoutubeLink(youtubeLink);
+
   return (
-    <main className="p-4 space-y-4">
+    <main className=" p-4 space-y-4">
       <p>
         Go To YouTube
         <br />
@@ -157,10 +189,8 @@ const Home: React.FC = () => {
         <br />
         Paste The Link Below👇
       </p>
-      <p className="text-lg font-semibold">Select a location</p>
-      {isLoadingLocation && <p>Detecting location...</p>}
-      {locationError && <p className="text-red-500">{locationError}</p>}
-      <details className="dropdown" ref={detailsRef}>
+      <p className="text-lg  font-semibold">Select a location</p>
+      <details className=" dropdown" ref={detailsRef}>
         <summary className="btn m-1 flex items-center">
           {displayLocation || "Select Location"}
           <svg
@@ -172,15 +202,15 @@ const Home: React.FC = () => {
             <path d="M201.4 374.6c12.5 12.5 32.8 12.5 45.3 0l160-160c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L224 306.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l160 160z" />
           </svg>
         </summary>
-        <ul className="menu dropdown-content bg-base-100 rounded-box z-[1] w-52 p-2 shadow">
+        <ul className="menu dropdown-content  bg-base-100 rounded-box z-[1] w-52 p-2 shadow">
           <li>
             <button onClick={() => handleLocationSelect("Dagapur")}>
-              Dagapur Trial
+              Dagapur
             </button>
           </li>
           <li>
             <button onClick={() => handleLocationSelect("Sevoke")}>
-              Sevoke Road Trial
+              Sevoke Road
             </button>
           </li>
         </ul>
@@ -193,7 +223,7 @@ const Home: React.FC = () => {
         value={youtubeLink}
         onChange={(e) => setYoutubeLink(e.target.value)}
       />
-      {showValidation && youtubeLink && !isValidYoutubeLink(youtubeLink) && (
+      {showValidation && youtubeLink && !isYoutubeLinkValid && (
         <p className="text-red-500 text-sm">
           Please enter a valid YouTube link.
         </p>
@@ -206,12 +236,11 @@ const Home: React.FC = () => {
         value={name}
         onChange={(e) => setName(e.target.value)}
       />
-      {showValidation &&
-        (!selectedLocation || !youtubeLink.trim() || !name) && (
-          <p className="text-red-500 text-sm">
-            Please fill in all fields before submitting.
-          </p>
-        )}
+      {showValidation && !allFieldsFilled && (
+        <p className="text-red-500 text-sm">
+          Please fill in all fields before submitting.
+        </p>
+      )}
       {duplicateError && (
         <p className="text-red-500 text-sm">{duplicateError}</p>
       )}
