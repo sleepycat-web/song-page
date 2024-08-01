@@ -23,55 +23,45 @@ const Home: React.FC = () => {
 useEffect(() => {
   const requestLocation = () => {
     if (navigator.geolocation) {
-      navigator.permissions
-        .query({ name: "geolocation" })
-        .then((permissionStatus) => {
-          if (permissionStatus.state === "granted") {
-            getCurrentPosition();
-          } else {
-            alert("Please enable location services to use this feature.");
+      const options = {
+        enableHighAccuracy: true,
+        timeout: 5000,
+        maximumAge: 0,
+      };
+
+      navigator.geolocation.getCurrentPosition(
+        async (position) => {
+          const { latitude, longitude } = position.coords;
+          try {
+            const response = await fetch("/api/getLocation", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({ latitude, longitude }),
+            });
+            const data = await response.json();
+            if (data.location) {
+              handleLocationSelect(data.location);
+            }
+          } catch (error) {
+            console.error("Error getting location:", error);
           }
-        });
+        },
+        (error) => {
+          console.error("Error getting geolocation:", error);
+        },
+        options
+      );
     } else {
       console.log("Geolocation is not supported by this browser.");
     }
   };
 
-  const getCurrentPosition = () => {
-    const options = {
-      enableHighAccuracy: true,
-      timeout: 5000,
-      maximumAge: 0,
-    };
-
-    navigator.geolocation.getCurrentPosition(
-      async (position) => {
-        const { latitude, longitude } = position.coords;
-        try {
-          const response = await fetch("/api/getLocation", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({ latitude, longitude }),
-          });
-          const data = await response.json();
-          if (data.location) {
-            handleLocationSelect(data.location);
-          }
-        } catch (error) {
-          console.error("Error getting location:", error);
-        }
-      },
-      (error) => {
-        console.error("Error getting geolocation:", error);
-      },
-      options
-    );
-  };
-
-  // Request location immediately when component mounts
+  // Request location when component mounts (page loads or refreshes)
   requestLocation();
+
+  // No need for interval or cleanup in this case
 }, []);
   
   const handleLocationSelect = (location: string) => {
