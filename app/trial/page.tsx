@@ -62,8 +62,13 @@ const Home: React.FC = () => {
   }, []);
 
   const handleLocationSelect = (location: string) => {
-    setSelectedLocation(location);
-    setDisplayLocation(location === "Sevoke" ? "Sevoke Road" : location);
+    if (location === "Sevoke") {
+      setSelectedLocation("Sevoke");
+      setDisplayLocation("Sevoke Road");
+    } else {
+      setSelectedLocation(location);
+      setDisplayLocation(location);
+    }
     if (detailsRef.current) {
       detailsRef.current.open = false;
     }
