@@ -1,5 +1,6 @@
 "use client";
-import React, { useState, useRef } from "react";
+
+import React, { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 
 interface FormData {
@@ -15,13 +16,59 @@ const Home: React.FC = () => {
   const [youtubeLink, setYoutubeLink] = useState<string>("");
   const [name, setName] = useState<string>("");
   const [showValidation, setShowValidation] = useState<boolean>(false);
-  const [duplicateError, setDuplicateError] = useState<string>("");
+  const [errorMessage, setErrorMessage] = useState<string>("");
   const detailsRef = useRef<HTMLDetailsElement>(null);
   const router = useRouter();
 
+  useEffect(() => {
+    const requestLocation = () => {
+      if (navigator.geolocation) {
+        const options = {
+          enableHighAccuracy: true,
+          timeout: 5000,
+          maximumAge: 0,
+        };
+
+        navigator.geolocation.getCurrentPosition(
+          async (position) => {
+            const { latitude, longitude } = position.coords;
+            try {
+              const response = await fetch("/api/getLocation", {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ latitude, longitude }),
+              });
+              const data = await response.json();
+              if (data.location) {
+                handleLocationSelect(data.location);
+              }
+            } catch (error) {
+              console.error("Error getting location:", error);
+            }
+          },
+          (error) => {
+            console.error("Error getting geolocation:", error);
+          },
+          options
+        );
+      } else {
+        console.log("Geolocation is not supported by this browser.");
+      }
+    };
+
+    requestLocation();
+  }, []);
+
   const handleLocationSelect = (location: string) => {
-    setSelectedLocation(location);
-    setDisplayLocation(location === "Sevoke" ? "Sevoke Road" : location);
+    if (location === "Sevoke") {
+      setSelectedLocation("Sevoke");
+      setDisplayLocation("Sevoke Road");
+    } else {
+      setSelectedLocation(location);
+      setDisplayLocation(location);
+    }
     if (detailsRef.current) {
       detailsRef.current.open = false;
     }
@@ -35,7 +82,7 @@ const Home: React.FC = () => {
 
   const handleSubmit = async () => {
     setShowValidation(true);
-    setDuplicateError("");
+    setErrorMessage("");
 
     if (
       selectedLocation &&
@@ -60,19 +107,10 @@ const Home: React.FC = () => {
 
         if (!response.ok) {
           const errorData = await response.json();
-          if (response.status === 400) {
-            if (errorData.error === "duplicate_song") {
-              setDuplicateError(
-                "This song is already in the queue for the selected location. Please choose a different song."
-              );
-            } else {
-              setDuplicateError(
-                "An error occurred while submitting the form. Please try again."
-              );
-            }
-          } else {
-            throw new Error("Failed to submit data");
-          }
+          setErrorMessage(
+            errorData.error ||
+              "An error occurred while submitting the form. Please try again."
+          );
         } else {
           console.log(await response.json());
           setSuccessMessage(
@@ -83,11 +121,11 @@ const Home: React.FC = () => {
           setYoutubeLink("");
           setName("");
           setShowValidation(false);
-          setDuplicateError(""); // Clear any previous error messages
+          setErrorMessage("");
         }
       } catch (error) {
         console.error("Error:", error);
-        setDuplicateError(
+        setErrorMessage(
           "An unexpected error occurred. Please try again later."
         );
       }
@@ -160,9 +198,7 @@ const Home: React.FC = () => {
           Please fill in all fields before submitting.
         </p>
       )}
-      {duplicateError && (
-        <p className="text-red-500 text-sm">{duplicateError}</p>
-      )}
+      {errorMessage && <p className="text-red-500 text-sm">{errorMessage}</p>}
       <button className="btn block" onClick={handleSubmit}>
         Submit
       </button>

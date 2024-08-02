@@ -2,7 +2,6 @@ import { MongoClient } from "mongodb";
 import { NextApiRequest, NextApiResponse } from "next";
 
 const uri = process.env.MONGODB_URI;
-
 if (!uri) {
   throw new Error("Please define the MONGODB_URI environment variable");
 }
@@ -18,22 +17,23 @@ export default async function handler(
       await client.connect();
       const database = client.db("ChaiMine");
 
-      // Determine which collection to query based on the 'location' query parameter
       const location = req.query.location as string;
       const collectionName =
         location === "dagapur" ? "SongDagapur" : "SongSevoke";
       const collection = database.collection(collectionName);
 
-      const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
-
       const entries = await collection
-        .find({
-          timestamp: { $gte: twentyFourHoursAgo.toISOString() },
-        })
+        .find({})
         .sort({ timestamp: -1 })
+        .limit(50)
         .toArray();
 
-      res.status(200).json(entries);
+      const currentTime = new Date();
+
+      res.status(200).json({
+        entries,
+        currentTime: currentTime.toISOString(),
+      });
     } catch (error) {
       console.error("Database error:", error);
       res.status(500).json({ error: "Error connecting to the database" });

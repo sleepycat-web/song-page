@@ -9,8 +9,23 @@ interface Entry {
   timestamp: string;
 }
 
+function formatDate(dateString: string): string {
+  const date = new Date(dateString);
+  return date
+    .toLocaleString("en-US", {
+      day: "numeric",
+      month: "long",
+      year: "numeric",
+      hour: "numeric",
+      minute: "2-digit",
+      hour12: true,
+    })
+    .replace(" at", "");
+}
+
 export default function SevokeQueue() {
   const [entries, setEntries] = useState<Entry[]>([]);
+  const [currentTime, setCurrentTime] = useState<string>("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -22,15 +37,20 @@ export default function SevokeQueue() {
           throw new Error("Failed to fetch entries");
         }
         const data = await response.json();
-        setEntries(data);
+        // Sort entries by timestamp in descending order
+        const sortedEntries = data.entries.sort(
+          (a: Entry, b: Entry) =>
+            new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+        );
+        setEntries(sortedEntries);
+        setCurrentTime(data.currentTime);
       } catch (error) {
         console.error("Failed to fetch entries:", error);
-        setError((error as Error).message);
+        setError(error instanceof Error ? error.message : String(error));
       } finally {
         setLoading(false);
       }
     }
-
     fetchEntries();
   }, []);
 
@@ -38,9 +58,13 @@ export default function SevokeQueue() {
   if (error) return <div>Error: {error}</div>;
 
   return (
-    <div>
+    <main className="">
       <h1 className="text-xl mb-4">Sevoke Entries</h1>
-      <ul>
+      <div className="mb-4">
+        <p> {formatDate(currentTime)}</p>
+        {/* <p>Showing {entries.length} most recent entries</p> */}
+      </div>
+      <ul className="text-white">
         {entries.map((entry) => (
           <li className="mb-4" key={entry._id}>
             <p>Name: {entry.name}</p>
@@ -54,10 +78,10 @@ export default function SevokeQueue() {
                 {entry.youtubeLink}
               </a>
             </p>
-            <p>Timestamp: {entry.timestamp}</p>
+            <p>Timestamp: {formatDate(entry.timestamp)}</p>
           </li>
         ))}
       </ul>
-    </div>
+    </main>
   );
 }
