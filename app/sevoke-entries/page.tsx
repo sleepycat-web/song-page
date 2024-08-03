@@ -11,16 +11,18 @@ interface Entry {
 
 function formatDate(dateString: string): string {
   const date = new Date(dateString);
-   return date
-     .toLocaleString("en-US", {
-       day: "numeric",
-       month: "long",
-       year: "numeric",
-       hour: "numeric",
-       minute: "2-digit",
-       hour12: true,
-     })
-     .replace(" at", "");
+
+  return date
+    .toLocaleString("en-US", {
+      day: "numeric",
+      month: "long",
+      year: "numeric",
+      hour: "numeric",
+      minute: "2-digit",
+      hour12: true,
+    })
+    .replace(" at", "") // Remove the comma after the day
+    .replace(",", ""); // Remove the comma after the day
 }
 
 export default function SevokeQueue() {
