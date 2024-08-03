@@ -11,7 +11,7 @@ const client = new MongoClient(uri);
 function getISTTime(): string {
   const now = new Date();
   const utc = now.getTime() + now.getTimezoneOffset() * 60000;
-  const istOffset = 5.5 * 60 * 60000;
+  const istOffset = 0;
   const ist = new Date(utc + istOffset);
   return ist.toISOString();
 }
