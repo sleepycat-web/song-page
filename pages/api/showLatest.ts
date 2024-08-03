@@ -8,13 +8,13 @@ if (!uri) {
 
 const client = new MongoClient(uri);
 
-function getISTTime(): string {
-  const now = new Date();
-  const utc = now.getTime() + now.getTimezoneOffset() * 60000;
-  const istOffset = 0;
-  const ist = new Date(utc + istOffset);
-  return ist.toISOString();
-}
+// function getISTTime(): string {
+//   const now = new Date();
+//   const utc = now.getTime() + now.getTimezoneOffset() * 60000;
+//   const istOffset = 0;
+//   const ist = new Date(utc + istOffset);
+//   return ist.toISOString();
+// }
 
 export default async function handler(
   req: NextApiRequest,
@@ -36,8 +36,7 @@ export default async function handler(
         .limit(50)
         .toArray();
 
-      const currentTime = getISTTime();
-
+ const currentTime = new Date();
       res.status(200).json({
         entries,
         currentTime,
