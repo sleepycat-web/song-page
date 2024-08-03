@@ -11,16 +11,16 @@ interface Entry {
 
 function formatDate(dateString: string): string {
   const date = new Date(dateString);
-  return date
-    .toLocaleString("en-US", {
-      day: "numeric",
-      month: "long",
-      year: "numeric",
-      hour: "numeric",
-      minute: "2-digit",
-      hour12: true,
-    })
-    .replace(" at", "");
+  const options: Intl.DateTimeFormatOptions = {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+    hour12: true,
+    timeZone: "Asia/Kolkata",
+  };
+  return new Intl.DateTimeFormat("en-US", options).format(date);
 }
 
 export default function DagapurQueue() {
