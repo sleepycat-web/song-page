@@ -13,7 +13,7 @@ async function connectToDatabase() {
 }
 
 function formatDateToIST(date: Date): string {
-  const istOffset = 0; // IST offset in milliseconds
+  const istOffset = 5.5 * 60 * 60 * 1000;; // IST offset in milliseconds
   const istDate = new Date(date.getTime() + istOffset);
 
   const day = istDate.getDate();
