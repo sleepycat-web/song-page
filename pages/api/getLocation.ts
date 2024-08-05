@@ -17,9 +17,8 @@ const locations: Location[] = [
   },
   {
     name: "Sevoke Road",
-    // coordinates: { latitude: 26.747152888772344, longitude: 88.43802366441821 }, // Approximate coordinates original ,
+    coordinates: { latitude: 26.747152888772344, longitude: 88.43802366441821 }, // Approximate coordinates original ,
 
-    coordinates: { latitude: 27.1826, longitude: 88.5018 }, // Approximate coordinates ,
 
     radius: 1000, // 1km radius
   },

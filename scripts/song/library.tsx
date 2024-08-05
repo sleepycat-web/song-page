@@ -95,6 +95,31 @@ const songLibrary = [
     youtubeLink: "https://youtu.be/fzbLWCdDy_Q?si=5hd3X420JEl33SQA",
     name: "Song 19",
   },
+  {
+    _id: "lib_20",
+    youtubeLink: "https://youtu.be/p2EdDiiVHh4?si=KGfzz_cIQeg2F3uw",
+    name: "Song 20",
+  },
+  {
+    _id: "lib_21",
+    youtubeLink: "https://youtu.be/JfxlsiFztLs?si=NJRFFODfXf8bbIHf",
+    name: "Song 21",
+  },
+  {
+    _id: "lib_22",
+    youtubeLink: "https://youtu.be/-Av7re3Ce8?si=NnIYe2dL-EGh2Ix",
+    name: "Song 22",
+  },
+  {
+    _id: "lib_23",
+    youtubeLink: "https://youtu.be/Wikr41dvvYg?si=3nddTELtiEnW9vNL",
+    name: "Song 23",
+  },
+  {
+    _id: "lib_24",
+    youtubeLink: "https://youtu.be/bXbhG6mSTr4?si=UMPIGYpWGk7unCXF",
+    name: "Song 24",
+  },
 ];
 
 export default songLibrary;
