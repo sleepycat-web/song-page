@@ -107,35 +107,33 @@ useEffect(() => {
       if (response.status === 200) {
         const data: Song = await response.json();
         if (data.location === "Sevoke") {
-          if (isInitialLoad) {
-            const randomSong = getRandomSong();
-            setCurrentSong({
-              ...randomSong,
-              location: "Sevoke",
-              timestamp: new Date().toISOString(),
-            });
-            setLastPlayedLibrarySongId(randomSong._id);
-            setIsLibrarySong(true);
-            setIsInitialLoad(false);
-          } else if (!currentSong) {
+          if (!currentSong) {
             setCurrentSong(data);
             setIsLibrarySong(false);
           } else if (data._id !== currentSong._id) {
             handleNewSong(data);
           } else if (data.youtubeLink !== currentSong.youtubeLink) {
-            // If the YouTube link of the current song has changed, update it
             setCurrentSong(data);
             setPlayerKey((prevKey) => prevKey + 1);
           }
         }
-      } else if (response.status === 204) {
-        // No new data, do nothing
+      } else if (response.status === 204 || isInitialLoad) {
+        // No new data or initial load, play a random song
+        const randomSong = getRandomSong();
+        setCurrentSong({
+          ...randomSong,
+          location: "Sevoke",
+          timestamp: new Date().toISOString(),
+        });
+        setLastPlayedLibrarySongId(randomSong._id);
+        setIsLibrarySong(true);
       } else {
         console.error("Error fetching latest song:", response.statusText);
       }
     } catch (error) {
       console.error("Error fetching latest song:", error);
     }
+    setIsInitialLoad(false);
   };
 
   fetchLatestSong(); // Run immediately
@@ -146,6 +144,7 @@ useEffect(() => {
     clearInterval(fetchInterval);
   };
 }, [currentSong, queue, isInitialLoad, isLibrarySong]);
+  
   const onPlayerStateChange = (event: YT.OnStateChangeEvent) => {
     if (event.data === YT.PlayerState.ENDED) {
       playNextSong();

@@ -86,6 +86,7 @@ export default async function handler(
       youtubeLink,
       name,
       timestamp: formattedDate,
+      status: "pending",
     });
 
     res.status(200).json({ message: "Data saved successfully" });

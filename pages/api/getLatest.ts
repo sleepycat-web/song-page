@@ -1,7 +1,7 @@
-import type { NextApiRequest, NextApiResponse } from 'next';
-import { MongoClient, ObjectId } from 'mongodb';
+import type { NextApiRequest, NextApiResponse } from "next";
+import { MongoClient, ObjectId } from "mongodb";
 
-const uri = process.env.MONGODB_URI || '';
+const uri = process.env.MONGODB_URI || "";
 let client: MongoClient;
 
 async function connectToDatabase() {
@@ -9,20 +9,17 @@ async function connectToDatabase() {
     client = new MongoClient(uri);
     await client.connect();
   }
-  return client.db('ChaiMine');
+  return client.db("ChaiMine");
 }
-
-// Store the last sent ID for each location
-const lastSentIds: { [key: string]: string } = {};
 
 function getCollectionName(location: string): string {
   switch (location) {
-    case 'Sevoke':
-      return 'SongSevoke';
-    case 'Dagapur':
-      return 'SongDagapur';
+    case "Sevoke":
+      return "SongSevoke";
+    case "Dagapur":
+      return "SongDagapur";
     default:
-      throw new Error('Invalid location');
+      throw new Error("Invalid location");
   }
 }
 
@@ -30,14 +27,14 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
-  if (req.method !== 'GET') {
+  if (req.method !== "GET") {
     return res.status(405).end();
   }
 
   const { location } = req.query;
 
-  if (typeof location !== 'string') {
-    return res.status(400).json({ error: 'Invalid location parameter' });
+  if (typeof location !== "string") {
+    return res.status(400).json({ error: "Invalid location parameter" });
   }
 
   try {
@@ -47,35 +44,31 @@ export default async function handler(
     try {
       collectionName = getCollectionName(location);
     } catch (error) {
-      return res.status(400).json({ error: 'Invalid location' });
+      return res.status(400).json({ error: "Invalid location" });
     }
 
     const collection = db.collection(collectionName);
 
-    const latestEntry = await collection
-      .find()
-      .sort({ _id: -1 })
-      .limit(1)
-      .toArray();
+    // Find the first pending song
+    const pendingSong = await collection.findOne({ status: "pending" });
 
-    if (latestEntry.length === 0) {
+    if (!pendingSong) {
       return res
         .status(404)
-        .json({ error: 'No data found for the specified location' });
+        .json({ error: "No pending songs found for the specified location" });
     }
 
-    const latestId = latestEntry[0]._id.toString();
+    // Update the song status to 'played'
+    await collection.updateOne(
+      { _id: pendingSong._id },
+      { $set: { status: "played" } }
+    );
 
-    // Check if the latest ID is different from the last sent ID
-    if (latestId !== lastSentIds[location]) {
-      // Update the last sent ID for this location
-      lastSentIds[location] = latestId;
-      res.status(200).json(latestEntry[0]);
-    } else {
-      // If the ID is the same, send a 204 No Content status
-      res.status(204).end();
-    }
+    // Remove the _id field from the response
+    const { _id, ...songWithoutId } = pendingSong;
+
+    res.status(200).json(songWithoutId);
   } catch (error) {
-    res.status(500).json({ error: 'Unable to fetch data' });
+    res.status(500).json({ error: "Unable to fetch or update data" });
   }
 }

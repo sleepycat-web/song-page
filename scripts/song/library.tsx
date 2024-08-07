@@ -120,6 +120,11 @@ const songLibrary = [
     youtubeLink: "https://youtu.be/bXbhG6mSTr4?si=UMPIGYpWGk7unCXF",
     name: "Song 24",
   },
+  {
+    _id: "lib_25",
+    youtubeLink: "https://youtu.be/L8agnbztVJk?si=QiOf3QMXseHQT1kRp",
+    name: "Song 5",
+  },
 ];
 
 export default songLibrary;
