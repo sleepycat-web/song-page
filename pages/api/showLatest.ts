@@ -8,14 +8,6 @@ if (!uri) {
 
 const client = new MongoClient(uri);
 
-// function getISTTime(): string {
-//   const now = new Date();
-//   const utc = now.getTime() + now.getTimezoneOffset() * 60000;
-//   const istOffset = 0;
-//   const ist = new Date(utc + istOffset);
-//   return ist.toISOString();
-// }
-
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
@@ -30,16 +22,16 @@ export default async function handler(
         location === "dagapur" ? "SongDagapur" : "SongSevoke";
       const collection = database.collection(collectionName);
 
-      const entries = await collection
+      // Fetch the 50 most recent entries
+      const recentEntries = await collection
         .find({})
         .sort({ timestamp: -1 })
         .limit(50)
         .toArray();
 
- const currentTime = new Date();
       res.status(200).json({
-        entries,
-        currentTime,
+        entries: recentEntries,
+        currentTime: new Date(),
       });
     } catch (error) {
       console.error("Database error:", error);

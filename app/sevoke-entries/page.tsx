@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 
 interface Entry {
   _id: string;
@@ -11,7 +11,6 @@ interface Entry {
 
 function formatDate(dateString: string): string {
   const date = new Date(dateString);
-
   return date
     .toLocaleString("en-US", {
       day: "numeric",
@@ -21,8 +20,8 @@ function formatDate(dateString: string): string {
       minute: "2-digit",
       hour12: true,
     })
-    .replace(" at", "") // Remove the comma after the day
-    .replace(",", ""); // Remove the comma after the day
+    .replace(" at", "")
+    .replace(",", "");
 }
 
 export default function SevokeQueue() {
@@ -39,12 +38,7 @@ export default function SevokeQueue() {
           throw new Error("Failed to fetch entries");
         }
         const data = await response.json();
-        // Sort entries by timestamp in descending order
-        const sortedEntries = data.entries.sort(
-          (a: Entry, b: Entry) =>
-            new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
-        );
-        setEntries(sortedEntries);
+        setEntries(data.entries);
         setCurrentTime(data.currentTime);
       } catch (error) {
         console.error("Failed to fetch entries:", error);
@@ -63,8 +57,7 @@ export default function SevokeQueue() {
     <main className="">
       <h1 className="text-xl mb-4">Sevoke Entries</h1>
       <div className="mb-4">
-        <p> {formatDate(currentTime)}</p>
-        {/* <p>Showing {entries.length} most recent entries</p> */}
+        <p>{formatDate(currentTime)}</p>
       </div>
       <ul className="text-white">
         {entries.map((entry) => (
