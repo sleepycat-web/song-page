@@ -1,7 +1,7 @@
 "use client";
 import React, { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
-
+import InstallPrompt from './install';  // Adjust the import path as needed
 interface FormData {
   location: string;
   youtubeLink: string;
@@ -99,6 +99,9 @@ const Home: React.FC = () => {
 
   return (
     <div className="">
+      <div className="md:block hidden">
+        <InstallPrompt />
+      </div>
       <div className="navbar hidden md:flex bg-neutral-900">
         <div className="flex-1">
           <a className="btn btn-ghost text-xl">Chai Mine</a>

@@ -20,7 +20,7 @@
   "dir": "auto",
   "lang": "en-US",
   "name": "Chai Mine Song Page",
-  "short_name": "Order",
-  "start_url": "https://my-sidet.vercel.app/",
-  "scope": "https://my-sidet.vercel.app/"
+  "short_name": "Chai Mine Song Page",
+  "start_url": "/",
+  "scope": "/"
 }
