@@ -9,8 +9,11 @@ const inter = Inter({ subsets: ["latin"] });
 export const metadata: Metadata = {
   title: "Dagapur Song",
   description: "",
+  manifest: "manifest-dagapur.json",
+  themeColor: [{ color: "#fff" }],
+  viewport:
+    "width=device-width, initial-scale=1 minimum-scale=1, shrink-to-fit=no, viewport-fit=cover",
 };
-
 const RootLayout = ({
   children,
 }: Readonly<{
