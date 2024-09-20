@@ -98,78 +98,96 @@ const Home: React.FC = () => {
   const isYoutubeLinkValid = isValidYoutubeLink(youtubeLink);
 
   return (
-    <main className=" p-4 space-y-4">
-      <p>
-        Go To YouTube
-        <br />
-        Play Your Music
-        <br />
-        Press Share Button & Copy Link
-        <br />
-        Paste The Link Below👇
-      </p>
-      <p className="text-lg  font-semibold">Select a location</p>
-      <details className=" dropdown" ref={detailsRef}>
-        <summary className="btn m-1 flex items-center">
-          {displayLocation || "Select Location"}
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 448 512"
-            className="ml-2 h-4 w-4"
-            fill="currentColor"
-          >
-            <path d="M201.4 374.6c12.5 12.5 32.8 12.5 45.3 0l160-160c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L224 306.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l160 160z" />
-          </svg>
-        </summary>
-        <ul className="menu dropdown-content  bg-base-100 rounded-box z-[1] w-52 p-2 shadow">
-          <li>
-            <button onClick={() => handleLocationSelect("Dagapur")}>
-              Dagapur
-            </button>
-          </li>
-          <li>
-            <button onClick={() => handleLocationSelect("Sevoke")}>
-              Sevoke Road
-            </button>
-          </li>
-        </ul>
-      </details>
-      <p className="text-lg font-semibold">Paste your Youtube link</p>
-      <input
-        type="text"
-        placeholder="Paste here"
-        className="input w-full max-w-xs mb-2 p-2 border rounded"
-        value={youtubeLink}
-        onChange={(e) => setYoutubeLink(e.target.value)}
-      />
-      {showValidation && youtubeLink && !isYoutubeLinkValid && (
-        <p className="text-red-500 text-sm">
-          Please enter a valid YouTube link.
+    <div className="">
+      <div className="navbar hidden md:flex bg-neutral-900">
+        <div className="flex-1">
+          <a className="btn btn-ghost text-xl">ChaiMine</a>
+        </div>
+        <div className="flex-none">
+          <ul className="menu menu-horizontal px-1">
+            <li>
+              <a href="/sevoke">Sevoke</a>
+            </li>
+            <li>
+              <a href="/dagapur">Dagapur</a>
+            </li>
+          </ul>
+        </div>
+      </div>
+
+      <main className=" p-4 space-y-4">
+        <p>
+          Go To YouTube
+          <br />
+          Play Your Music
+          <br />
+          Press Share Button & Copy Link
+          <br />
+          Paste The Link Below👇
         </p>
-      )}
-      <p className="text-lg font-semibold">Your Name</p>
-      <input
-        type="text"
-        placeholder="Enter your Name"
-        className="input w-full max-w-xs mb-4 p-2 border rounded"
-        value={name}
-        onChange={(e) => setName(e.target.value)}
-      />
-      {showValidation && !allFieldsFilled && (
-        <p className="text-red-500 text-sm">
-          Please fill in all fields before submitting.
-        </p>
-      )}
-      {duplicateError && (
-        <p className="text-red-500 text-sm">{duplicateError}</p>
-      )}
-      <button className="btn block" onClick={handleSubmit}>
-        Submit
-      </button>
-      {successMessage && (
-        <p className="text-green-500 mt-2">{successMessage}</p>
-      )}
-    </main>
+        <p className="text-lg  font-semibold">Select a location</p>
+        <details className=" dropdown" ref={detailsRef}>
+          <summary className="btn m-1 flex items-center">
+            {displayLocation || "Select Location"}
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 448 512"
+              className="ml-2 h-4 w-4"
+              fill="currentColor"
+            >
+              <path d="M201.4 374.6c12.5 12.5 32.8 12.5 45.3 0l160-160c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L224 306.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l160 160z" />
+            </svg>
+          </summary>
+          <ul className="menu dropdown-content  bg-base-100 rounded-box z-[1] w-52 p-2 shadow">
+            <li>
+              <button onClick={() => handleLocationSelect("Dagapur")}>
+                Dagapur
+              </button>
+            </li>
+            <li>
+              <button onClick={() => handleLocationSelect("Sevoke")}>
+                Sevoke Road
+              </button>
+            </li>
+          </ul>
+        </details>
+        <p className="text-lg font-semibold">Paste your Youtube link</p>
+        <input
+          type="text"
+          placeholder="Paste here"
+          className="input w-full max-w-xs mb-2 p-2 border rounded"
+          value={youtubeLink}
+          onChange={(e) => setYoutubeLink(e.target.value)}
+        />
+        {showValidation && youtubeLink && !isYoutubeLinkValid && (
+          <p className="text-red-500 text-sm">
+            Please enter a valid YouTube link.
+          </p>
+        )}
+        <p className="text-lg font-semibold">Your Name</p>
+        <input
+          type="text"
+          placeholder="Enter your Name"
+          className="input w-full max-w-xs mb-4 p-2 border rounded"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+        />
+        {showValidation && !allFieldsFilled && (
+          <p className="text-red-500 text-sm">
+            Please fill in all fields before submitting.
+          </p>
+        )}
+        {duplicateError && (
+          <p className="text-red-500 text-sm">{duplicateError}</p>
+        )}
+        <button className="btn block" onClick={handleSubmit}>
+          Submit
+        </button>
+        {successMessage && (
+          <p className="text-green-500 mt-2">{successMessage}</p>
+        )}
+      </main>
+    </div>
   );
 };
 
