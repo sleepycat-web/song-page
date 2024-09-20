@@ -7,6 +7,10 @@ const inter = Inter({ subsets: ["latin"] });
 export const metadata: Metadata = {
   title: "Chai Mine",
   description: "",
+  manifest: "manifest.json",
+  themeColor: [{ color: "#fff" }],
+  viewport:
+    "width=device-width, initial-scale=1 minimum-scale=1, shrink-to-fit=no, viewport-fit=cover",
 };
 
 export default function RootLayout({
