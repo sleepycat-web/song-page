@@ -111,6 +111,12 @@ const Home: React.FC = () => {
             <li>
               <a href="/dagapur">Dagapur</a>
             </li>
+            <li>
+              <a href="/sevoke-entries">Sevoke Entries</a>
+            </li>
+            <li>
+              <a href="/dagapur-entries">Dagapur Entries</a>
+            </li>
           </ul>
         </div>
       </div>
