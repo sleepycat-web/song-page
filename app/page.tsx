@@ -101,7 +101,7 @@ const Home: React.FC = () => {
     <div className="">
       <div className="navbar hidden md:flex bg-neutral-900">
         <div className="flex-1">
-          <a className="btn btn-ghost text-xl">ChaiMine</a>
+          <a className="btn btn-ghost text-xl">Chai Mine</a>
         </div>
         <div className="flex-none">
           <ul className="menu menu-horizontal px-1">
