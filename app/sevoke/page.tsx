@@ -138,7 +138,7 @@ useEffect(() => {
 
   fetchLatestSong(); // Run immediately
 
-  const fetchInterval = setInterval(fetchLatestSong, 1000);
+  const fetchInterval = setInterval(fetchLatestSong, 3000);
 
   return () => {
     clearInterval(fetchInterval);
