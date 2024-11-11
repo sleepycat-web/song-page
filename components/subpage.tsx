@@ -157,10 +157,21 @@ const SubPage: React.FC<SubPageProps> = ({ location, Profile }) => {
     return match && match[2].length === 11 ? match[2] : null;
   };
 
-  const onPlayerReady = (event: YT.PlayerEvent) => {
-    youtubePlayerRef.current = event.target;
+const onPlayerReady = (event: YT.PlayerEvent) => {
+  youtubePlayerRef.current = event.target; 
+ };
+useEffect(() => {
+  if (youtubePlayerRef.current) {
+    youtubePlayerRef.current.addEventListener("onReady", onPlayerReady);
+    youtubePlayerRef.current.addEventListener("onError", onPlayerError);
+  }
+  return () => {
+    if (youtubePlayerRef.current) {
+      youtubePlayerRef.current.removeEventListener("onReady", onPlayerReady);
+      youtubePlayerRef.current.removeEventListener("onError", onPlayerError);
+    }
   };
-
+}, []);
   const handleError = () => {
     setIsValidYouTubeLink(false);
     const randomSong = getRandomSong();
