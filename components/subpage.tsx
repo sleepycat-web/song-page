@@ -180,9 +180,13 @@ const SubPage: React.FC<SubPageProps> = ({ location, Profile }) => {
             (!currentSong || data._id !== currentSong._id)
           ) {
             console.log("Switching to database song:", data.name);
-            setCurrentSong(data);
+            setCurrentSong({
+              ...data,
+              location: location,
+              timestamp: new Date().toISOString(),
+            });
             setIsLibrarySong(false);
-            setPlayerKey((prev) => prev + 1);
+            setPlayerKey((prev) => prev + 1); // Ensure player remounts
             setIsPlayerReady(false);
           }
         } else {
@@ -195,7 +199,7 @@ const SubPage: React.FC<SubPageProps> = ({ location, Profile }) => {
 
     const interval = setInterval(fetchLatestSong, 3000);
     return () => clearInterval(interval);
-  }, [location, currentSong]);
+  }, [location, currentSong, setPlayerKey]); // Added setPlayerKey to dependencies
 
   const getYouTubeVideoId = (url: string): string | null => {
     if (!url) return null;
@@ -235,6 +239,14 @@ const SubPage: React.FC<SubPageProps> = ({ location, Profile }) => {
     console.error("YouTube player error:", event.data);
     handleError();
   };
+
+  // Restart player when a new song is added
+  useEffect(() => {
+    if (currentSong) {
+      setPlayerKey((prev) => prev + 1);
+      setIsPlayerReady(false);
+    }
+  }, [currentSong]);
 
   return (
     <div className="relative">
