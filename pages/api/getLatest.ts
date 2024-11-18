@@ -65,9 +65,8 @@ export default async function handler(
     );
 
     // Remove the _id field from the response
-    const { _id, ...songWithoutId } = pendingSong;
-
-    res.status(200).json(songWithoutId);
+ 
+    res.status(200).json(pendingSong);
   } catch (error) {
     res.status(500).json({ error: "Unable to fetch or update data" });
   }
