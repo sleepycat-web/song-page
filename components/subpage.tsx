@@ -89,26 +89,7 @@ const SubPage: React.FC<SubPageProps> = ({ location, Profile }) => {
     setIsValidYouTubeLink(true);
   }, [playNextSong]);
 
-  // Set up visibility change handling
-  useEffect(() => {
-    const handleVisibilityChange = () => {
-      if (youtubePlayerRef.current) {
-        try {
-          // If page becomes hidden, ensure video keeps playing
-          if (document.hidden) {
-            youtubePlayerRef.current.playVideo();
-          }
-        } catch (error) {
-          console.error("Error handling visibility change:", error);
-        }
-      }
-    };
-
-    document.addEventListener("visibilitychange", handleVisibilityChange);
-    return () => {
-      document.removeEventListener("visibilitychange", handleVisibilityChange);
-    };
-  }, []);
+  
 
   // Load initial library song
   useEffect(() => {
