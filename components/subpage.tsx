@@ -178,7 +178,7 @@ const SubPage: React.FC<SubPageProps> = ({ location, Profile }) => {
       }
     };
 
-    const interval = setInterval(fetchLatestSong, 3000);
+    const interval = setInterval(fetchLatestSong, 5000);
     return () => clearInterval(interval);
   }, [location, currentSong, setPlayerKey]); // Added setPlayerKey to dependencies
 
